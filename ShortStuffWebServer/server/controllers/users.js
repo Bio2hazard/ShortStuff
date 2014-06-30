@@ -6,10 +6,18 @@
 var mongoose = require('mongoose'),
     User = mongoose.model('User');
 
+var unirest = require('unirest');
+
 /**
  * Auth callback
  */
 exports.authCallback = function(req, res) {
+    unirest.put('http://localhost:6354/api/user/' + req.user.google.id)
+        .headers({ 'Accept': 'application/json' })
+        .send({ 'Id': req.user.google.id, 'Name': req.user.name, 'Tag': req.user.email.substr(0, req.user.email.indexOf('@')), 'Picture': req.user.google.picture  })
+        .end(function (response) {
+            console.log(response.body);
+        });
     res.redirect('/');
 };
 
