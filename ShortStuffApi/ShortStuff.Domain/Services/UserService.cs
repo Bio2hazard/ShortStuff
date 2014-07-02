@@ -12,10 +12,5 @@ namespace ShortStuff.Domain.Services
         {
             _unitOfWork = unitOfWork;
         }
-
-        public IEnumerable<User> GetAll()
-        {
-            return _unitOfWork.UserRepository.GetAll();
-        }
     }
 }

@@ -11,8 +11,8 @@ namespace ShortStuff.Data
             : base("ShortStuffContext")
         {
             // Lazy Loading Settings
-            Configuration.ProxyCreationEnabled = false;
-            Configuration.LazyLoadingEnabled = false;
+            //Configuration.ProxyCreationEnabled = false;
+            //Configuration.LazyLoadingEnabled = false;
 
             Database.SetInitializer(new MigrateDatabaseToLatestVersion<ShortStuffContext, ShortStuffContextMigrationConfiguration>());
         }

@@ -5,6 +5,5 @@ namespace ShortStuff.Domain.Services
 {
     public interface IUserService
     {
-        IEnumerable<User> GetAll();
     }
 }

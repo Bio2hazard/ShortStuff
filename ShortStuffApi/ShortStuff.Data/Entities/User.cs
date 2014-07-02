@@ -19,11 +19,11 @@ namespace ShortStuff.Data.Entities
         public string Tag { get; set; }
         public string Picture { get; set; }
 
-        public ICollection<Message> Messages { get; set; }
-        public ICollection<User> Followers { get; set; }
-        public ICollection<Message> Favorites { get; set; }
-        public ICollection<Notification> Notifications { get; set; }
-        public ICollection<Topic> SubscribedTopics { get; set; }
+        public virtual ICollection<Message> Messages { get; set; }
+        public virtual ICollection<User> Followers { get; set; }
+        public virtual ICollection<Message> Favorites { get; set; }
+        public virtual ICollection<Notification> Notifications { get; set; }
+        public virtual ICollection<Topic> SubscribedTopics { get; set; }
 
     }
 }

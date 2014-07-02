@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using AutoMapper.QueryableExtensions;
 using ShortStuff.Data;
 using ShortStuff.Domain.Entities;
 
@@ -17,47 +16,50 @@ namespace ShortStuff.Repository
 
         public override IEnumerable<Notification> GetAll()
         {
-            return _context.Notifications.Project()
-                           .To<Notification>();
+            //return _context.Notifications.Project()
+            //               .To<Notification>();
+            return null;
         }
 
         public override Notification GetById(int id)
         {
-            return _context.Notifications.Project()
-                           .To<Notification>()
-                           .FirstOrDefault(n => n.Id == id);
+            //return _context.Notifications.Project()
+            //               .To<Notification>()
+            //               .FirstOrDefault(n => n.Id == id);
+            return null;
         }
 
         public override int Create(Notification entity)
         {
-            var notification = AutoMapper.Mapper.Map<Data.Entities.Notification>(entity);
-            _context.Notifications.Add(notification);
-            _context.SaveChanges();
-            return notification.Id;
+            //var notification = AutoMapper.Mapper.Map<Data.Entities.Notification>(entity);
+            //_context.Notifications.Add(notification);
+            //_context.SaveChanges();
+            //return notification.Id;
+            return 0;
         }
 
         public override void Update(Notification entity)
         {
-            var notification = AutoMapper.Mapper.Map<Data.Entities.Notification>(entity);
+            //var notification = AutoMapper.Mapper.Map<Data.Entities.Notification>(entity);
 
-            var dbNotification = _context.ChangeTracker.Entries<Data.Entities.Notification>()
-                                         .FirstOrDefault(n => n.Entity.Id == notification.Id);
+            //var dbNotification = _context.ChangeTracker.Entries<Data.Entities.Notification>()
+            //                             .FirstOrDefault(n => n.Entity.Id == notification.Id);
 
-            if (dbNotification != null)
-            {
-                dbNotification.CurrentValues.SetValues(notification);
-            }
-            else
-            {
-                var tempNotification = new Data.Entities.Notification
-                {
-                    Id = notification.Id
-                };
-                _context.Notifications.Attach(tempNotification);
-                _context.Entry(tempNotification)
-                        .CurrentValues.SetValues(notification);
-            }
-            _context.SaveChanges();
+            //if (dbNotification != null)
+            //{
+            //    dbNotification.CurrentValues.SetValues(notification);
+            //}
+            //else
+            //{
+            //    var tempNotification = new Data.Entities.Notification
+            //    {
+            //        Id = notification.Id
+            //    };
+            //    _context.Notifications.Attach(tempNotification);
+            //    _context.Entry(tempNotification)
+            //            .CurrentValues.SetValues(notification);
+            //}
+            //_context.SaveChanges();
         }
 
         public override void Delete(Notification entity)

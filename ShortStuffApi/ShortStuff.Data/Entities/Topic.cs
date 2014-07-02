@@ -12,7 +12,7 @@ namespace ShortStuff.Data.Entities
 
         public int Id { get; set; }
         public string Name { get; set; }
-        public ICollection<Message> Messages { get; set; }
-        public ICollection<User> Subscribers { get; set; }
+        public virtual ICollection<Message> Messages { get; set; }
+        public virtual ICollection<User> Subscribers { get; set; }
     }
 }

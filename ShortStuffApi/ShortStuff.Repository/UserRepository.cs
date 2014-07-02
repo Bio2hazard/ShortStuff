@@ -1,10 +1,13 @@
-﻿using System.Collections;
+﻿using System;
 using System.Collections.Generic;
+using System.Data.Entity.Validation;
+using System.Diagnostics;
+using System.Dynamic;
 using System.Linq;
-using AutoMapper;
-using AutoMapper.QueryableExtensions;
+using Omu.ValueInjecter;
 using ShortStuff.Data;
 using ShortStuff.Domain.Entities;
+using ShortStuff.Repository.ValueInjecter;
 
 namespace ShortStuff.Repository
 {
@@ -19,21 +22,18 @@ namespace ShortStuff.Repository
 
         public override IEnumerable<User> GetAll()
         {
-            IEnumerable<User> user = _context.Users.Project()
-                           .To<User>("Followers");
-            return user;
+            return _context.Users.BuildUser();
         }
 
         public override User GetById(string id)
         {
-            return _context.Users.Project()
-                           .To<User>()
-                           .FirstOrDefault(u => u.Id == id);
+            return _context.Users.FirstOrDefault(u => u.Id == id).BuildUser();
         }
 
         public override string Create(User entity)
         {
-            var user = AutoMapper.Mapper.Map<Data.Entities.User>(entity);
+            var user = new Data.Entities.User();
+            user.InjectFrom<SmartConventionInjection>(entity);
             _context.Users.Add(user);
             _context.SaveChanges();
             return user.Id;
@@ -41,25 +41,58 @@ namespace ShortStuff.Repository
 
         public override void Update(User entity)
         {
-            var user = AutoMapper.Mapper.Map<Data.Entities.User>(entity);
+            //var user = new Data.Entities.User();
+            //user.InjectFrom<SmartConventionInjection>(entity);
 
-            var dbUser = _context.ChangeTracker.Entries<Data.Entities.User>()
-                                 .FirstOrDefault(u => u.Entity.Id == user.Id);
+            //var dbUser = _context.ChangeTracker.Entries<Data.Entities.User>()
+            //                 .FirstOrDefault(u => u.Entity.Id == user.Id);
 
-            if (dbUser != null)
-            {
-                dbUser.CurrentValues.SetValues(user);
-            }
-            else
-            {
-                var tempUser = new Data.Entities.User
-                {
-                    Id = user.Id
-                };
-                _context.Users.Attach(tempUser);
-                _context.Entry(tempUser).CurrentValues.SetValues(user);
-            }
-            _context.SaveChanges();
+            //var dbUser = _context.ChangeTracker.Entries<Data.Entities.User>()
+            //                 .FirstOrDefault(u => u.Entity.Id == entity.Id);
+
+            var dbUser = _context.Users.FirstOrDefault(u => u.Id == entity.Id);
+
+            var ci = new CompositeInjection();
+
+            var test = ci.Inject(entity, dbUser);
+
+            //var sourceProps = entity.GetProps();
+
+            return;
+            //if (dbUser != null)
+            //{
+            //    dbUser.CurrentValues.SetValues(user);
+            //}
+            //else
+            //{
+            //    var tempUser = new Data.Entities.User
+            //    {
+            //        Id = user.Id
+            //    };
+            //    _context.Users.Attach(tempUser);
+            //    _context.Entry(tempUser).CurrentValues.SetValues(user);
+            //}
+            //_context.SaveChanges();
+
+            //var user = AutoMapper.Mapper.Map<Data.Entities.User>(entity);
+
+            //var dbUser = _context.ChangeTracker.Entries<Data.Entities.User>()
+            //                     .FirstOrDefault(u => u.Entity.Id == user.Id);
+
+            //if (dbUser != null)
+            //{
+            //    dbUser.CurrentValues.SetValues(user);
+            //}
+            //else
+            //{
+            //    var tempUser = new Data.Entities.User
+            //    {
+            //        Id = user.Id
+            //    };
+            //    _context.Users.Attach(tempUser);
+            //    _context.Entry(tempUser).CurrentValues.SetValues(user);
+            //}
+            //_context.SaveChanges();
         }
 
         public override void Delete(User entity)

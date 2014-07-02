@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace ShortStuff.Domain.Entities
 {
@@ -30,9 +31,9 @@ namespace ShortStuff.Domain.Entities
                 AddBrokenRule(new ValidationRule("Tag", "Tag_Missing"));
             }
             System.Uri uriResult;
-            if (!string.IsNullOrWhiteSpace(Picture) && 
-                Uri.TryCreate(Picture, UriKind.Absolute, out uriResult) && 
-                (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps))
+            if (!string.IsNullOrWhiteSpace(Picture) && // If string is set
+                !(Uri.TryCreate(Picture, UriKind.Absolute, out uriResult) && // And either creating the link fails...
+                  (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps))) // Or the link is not of type Http(s)
             {
                 AddBrokenRule(new ValidationRule("Picture", "Picture_InvalidURI"));
             }
