@@ -11,7 +11,7 @@ using Omu.ValueInjecter;
 
 namespace ShortStuff.Repository.ValueInjecter
 {
-    public class CompositeInjection
+    public class ExpandoInjection
     {
         private class Path
         {
@@ -21,7 +21,7 @@ namespace ShortStuff.Repository.ValueInjecter
         private ExpandoObject _compositeObject;
         private ICollection<KeyValuePair<string, object>> _compositeCollection;
      
-        public CompositeInjection()
+        public ExpandoInjection()
         {
             _compositeObject = new ExpandoObject();
             _compositeCollection = (ICollection<KeyValuePair<string, object>>)_compositeObject;

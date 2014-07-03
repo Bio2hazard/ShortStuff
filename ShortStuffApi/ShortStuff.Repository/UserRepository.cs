@@ -41,43 +41,13 @@ namespace ShortStuff.Repository
 
         public override void Update(User entity)
         {
-            //var user = new Data.Entities.User();
-            //user.InjectFrom<SmartConventionInjection>(entity);
+            var dbUser = _context.Users.FirstOrDefault(u => u.Id == entity.Id).InjectFrom<NotNullInjection>(entity);
 
-            //var dbUser = _context.ChangeTracker.Entries<Data.Entities.User>()
-            //                 .FirstOrDefault(u => u.Entity.Id == user.Id);
+            var changeTrackerUser = _context.ChangeTracker.Entries<Data.Entities.User>()
+                                            .FirstOrDefault(u => u.Entity.Id == entity.Id);
 
-            //var dbUser = _context.ChangeTracker.Entries<Data.Entities.User>()
-            //                 .FirstOrDefault(u => u.Entity.Id == entity.Id);
-
-            var dbUser = _context.Users.FirstOrDefault(u => u.Id == entity.Id);
-
-            var ci = new CompositeInjection();
-
-            var test = ci.Inject(entity, dbUser);
-
-            //var sourceProps = entity.GetProps();
-
-            return;
-            //if (dbUser != null)
-            //{
-            //    dbUser.CurrentValues.SetValues(user);
-            //}
-            //else
-            //{
-            //    var tempUser = new Data.Entities.User
-            //    {
-            //        Id = user.Id
-            //    };
-            //    _context.Users.Attach(tempUser);
-            //    _context.Entry(tempUser).CurrentValues.SetValues(user);
-            //}
-            //_context.SaveChanges();
-
-            //var user = AutoMapper.Mapper.Map<Data.Entities.User>(entity);
-
-            //var dbUser = _context.ChangeTracker.Entries<Data.Entities.User>()
-            //                     .FirstOrDefault(u => u.Entity.Id == user.Id);
+            changeTrackerUser.CurrentValues.SetValues(dbUser);
+            _context.SaveChanges();
 
             //if (dbUser != null)
             //{

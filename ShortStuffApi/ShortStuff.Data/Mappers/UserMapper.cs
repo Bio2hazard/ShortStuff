@@ -38,8 +38,13 @@ namespace ShortStuff.Data.Mappers
 
             // Relationships
             HasMany(u => u.Followers)
-                .WithMany()
-                .Map(u => u.MapLeftKey("FollowerID"));
+                .WithMany(u => u.Following)
+                .Map(u =>
+                {
+                    u.ToTable("Followers");
+                    u.MapLeftKey("FollowerID");
+                    u.MapRightKey("FollowingID");
+                });
 
             HasMany(u => u.Favorites)
                 .WithMany()

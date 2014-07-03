@@ -53,17 +53,19 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="LinqExtensions.cs" />
     <Compile Include="UserExtensions.cs" />
-    <Compile Include="ValueInjecter\CompositeInjection.cs" />
+    <Compile Include="ValueInjecter\NotNullInjection.cs" />
+    <Compile Include="ValueInjecter\ExpandoInjection.cs" />
     <Compile Include="ValueInjecter\DeepCloneInjection.cs" />
     <Compile Include="EchoRepository.cs" />
     <Compile Include="ValueInjecter\FastDeepCloneInjection.cs" />
-    <Compile Include="ValueInjecter\FastOneCloneInjection.cs" />
     <Compile Include="MessageRepository.cs" />
     <Compile Include="NotificationRepository.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RepositoryBase.cs" />
-    <Compile Include="ValueInjecter\IgnorePropertyInjection.cs" />
+    <Compile Include="ValueInjecter\SinglePropertyDepthInjection.cs" />
+    <Compile Include="ValueInjecter\MaxDepthCloneInjector.cs" />
     <Compile Include="ValueInjecter\SmartConventionInjection.cs" />
     <Compile Include="TopicRepository.cs" />
     <Compile Include="UserRepository.cs" />

@@ -8,6 +8,7 @@ namespace ShortStuff.Data.Entities
         {
             Messages = new List<Message>();
             Followers = new List<User>();
+            Following = new List<User>();
             Favorites = new List<Message>();
             Notifications = new List<Notification>();
             SubscribedTopics = new List<Topic>();
@@ -21,6 +22,7 @@ namespace ShortStuff.Data.Entities
 
         public virtual ICollection<Message> Messages { get; set; }
         public virtual ICollection<User> Followers { get; set; }
+        public virtual ICollection<User> Following { get; set; }
         public virtual ICollection<Message> Favorites { get; set; }
         public virtual ICollection<Notification> Notifications { get; set; }
         public virtual ICollection<Topic> SubscribedTopics { get; set; }

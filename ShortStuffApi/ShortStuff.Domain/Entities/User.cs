@@ -12,6 +12,7 @@ namespace ShortStuff.Domain.Entities
         public string Picture { get; set; }
         public IEnumerable<Message> Messages { get; set; }
         public IEnumerable<User> Followers { get; set; }
+        public IEnumerable<User> Following { get; set; }
         public IEnumerable<Message> Favorites { get; set; }
         public IEnumerable<Notification> Notifications { get; set; }
         public IEnumerable<Topic> SubscribedTopics { get; set; }
