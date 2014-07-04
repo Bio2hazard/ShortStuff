@@ -31,22 +31,27 @@ namespace ShortStuff.Data.Mappers
             // Relationships
             HasRequired(n => n.Owner)
                 .WithMany(u => u.Notifications)
-                .Map(u => u.MapKey("OwnerID"))
+                .HasForeignKey(n => n.OwnerId)
                 .WillCascadeOnDelete(false);
 
             HasOptional(n => n.SourceMessage)
                 .WithMany()
-                .Map(m => m.MapKey("SourceMessageID"))
+                .HasForeignKey(n => n.SourceMessageId)
                 .WillCascadeOnDelete(false);
 
             HasOptional(n => n.SourceUser)
                 .WithMany()
-                .Map(u => u.MapKey("SourceUserID"))
+                .HasForeignKey(n => n.SourceUserId)
                 .WillCascadeOnDelete(false);
 
             HasOptional(n => n.SourceTopic)
                 .WithMany()
-                .Map(t => t.MapKey("SourceTopicID"))
+                .HasForeignKey(n => n.SourceTopicId)
+                .WillCascadeOnDelete(false);
+
+            HasOptional(n => n.SourceEcho)
+                .WithMany()
+                .HasForeignKey(n => n.SourceEchoId)
                 .WillCascadeOnDelete(false);
         }
     }

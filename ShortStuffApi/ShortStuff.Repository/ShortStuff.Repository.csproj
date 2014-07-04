@@ -53,8 +53,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="LinqExtensions.cs" />
-    <Compile Include="UserExtensions.cs" />
+    <Compile Include="Extensions\TopicExtension.cs" />
+    <Compile Include="Extensions\NotificationExtension.cs" />
+    <Compile Include="Extensions\LinqExtensions.cs" />
+    <Compile Include="Extensions\EchoExtension.cs" />
+    <Compile Include="Extensions\MessageExtension.cs" />
+    <Compile Include="Extensions\UserExtensions.cs" />
     <Compile Include="ValueInjecter\NotNullInjection.cs" />
     <Compile Include="ValueInjecter\ExpandoInjection.cs" />
     <Compile Include="ValueInjecter\DeepCloneInjection.cs" />

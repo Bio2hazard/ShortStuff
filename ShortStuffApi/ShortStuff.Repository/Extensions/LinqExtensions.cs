@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Omu.ValueInjecter;
 using ShortStuff.Repository.ValueInjecter;
 
-namespace ShortStuff.Repository
+namespace ShortStuff.Repository.Extensions
 {
     public static class LinqExtensions
     {

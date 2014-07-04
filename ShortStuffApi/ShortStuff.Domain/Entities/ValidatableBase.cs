@@ -18,6 +18,14 @@ namespace ShortStuff.Domain.Entities
             return _brokenRules;
         }
 
+        public IEnumerable<ValidationRule> GetUpdateBrokenRules()
+        {
+            _brokenRules.Clear();
+            UpdateValidate();
+            return _brokenRules;
+        }
+
         protected abstract void Validate();
+        protected abstract void UpdateValidate();
     }
 }

@@ -70,11 +70,27 @@ namespace ShortStuff.Web.App_Start
                   .To<UserService>()
                   .InRequestScope();
 
+            kernel.Bind<IMessageService>()
+                  .To<MessageService>()
+                  .InRequestScope();
+
+            kernel.Bind<IEchoService>()
+                  .To<EchoService>()
+                  .InRequestScope();
+
+            kernel.Bind<INotificationService>()
+                  .To<NotificationService>()
+                  .InRequestScope();
+
+            kernel.Bind<ITopicService>()
+                  .To<TopicService>()
+                  .InRequestScope();
+
             kernel.Bind<IUnitOfWork>()
                   .To<UnitOfWork>()
                   .InRequestScope();
 
-            kernel.Bind<IRepository<User, string>>()
+            kernel.Bind<IRepository<User, decimal>>()
                   .To<UserRepository>()
                   .InRequestScope();
 

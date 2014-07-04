@@ -4,7 +4,7 @@ namespace ShortStuff.Domain
 {
     public interface IUnitOfWork
     {
-        IRepository<User, string> UserRepository { get; }
+        IRepository<User, decimal> UserRepository { get; }
         IRepository<Message, int> MessageRepository { get; }
         IRepository<Echo, int> EchoRepository { get; }
         IRepository<Notification, int> NotificationRepository { get; }

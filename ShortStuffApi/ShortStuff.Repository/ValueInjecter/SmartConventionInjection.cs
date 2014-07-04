@@ -27,7 +27,7 @@ namespace ShortStuff.Repository.ValueInjecter
 
         protected virtual bool Match(SmartConventionInfo c)
         {
-            return c.SourceProp.Name == c.TargetProp.Name && c.SourceProp.PropertyType == c.TargetProp.PropertyType;
+            return c.SourceProp.Name == c.TargetProp.Name && (c.SourceProp.PropertyType == c.TargetProp.PropertyType || Nullable.GetUnderlyingType(c.SourceProp.PropertyType) == c.TargetProp.PropertyType);
         }
 
         protected virtual void ExecuteMatch(SmartMatchInfo mi)

@@ -5,13 +5,13 @@ namespace ShortStuff.Domain
 {
     public class UnitOfWork : IUnitOfWork
     {
-        private readonly IRepository<User, string> _userRepository;
+        private readonly IRepository<User, decimal> _userRepository;
         private readonly IRepository<Message, int> _messageRepository;
         private readonly IRepository<Echo, int> _echoRepository;
         private readonly IRepository<Notification, int> _notificationRepository;
         private readonly IRepository<Topic, int> _topicRepository;
 
-        public UnitOfWork(IRepository<User, string> userRepository, IRepository<Message, int> messageRepository, IRepository<Echo, int> echoRepository, IRepository<Notification, int> notificationRepository, IRepository<Topic, int> topicRepository)
+        public UnitOfWork(IRepository<User, decimal> userRepository, IRepository<Message, int> messageRepository, IRepository<Echo, int> echoRepository, IRepository<Notification, int> notificationRepository, IRepository<Topic, int> topicRepository)
         {
             _userRepository = userRepository;
             _messageRepository = messageRepository;
@@ -20,7 +20,7 @@ namespace ShortStuff.Domain
             _topicRepository = topicRepository;
         }
 
-        public IRepository<User, string> UserRepository
+        public IRepository<User, decimal> UserRepository
         {
             get { return _userRepository; }
         }

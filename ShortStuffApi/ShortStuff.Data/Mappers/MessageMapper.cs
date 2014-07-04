@@ -26,14 +26,21 @@ namespace ShortStuff.Data.Mappers
                 .IsRequired()
                 .HasMaxLength(140); // Only 140 characters for you
 
+            Property(m => m.CreatorId)
+                .IsRequired();
+
+            Property(m => m.ParentMessageId)
+                .IsOptional();
+
             // Relationships
             HasRequired(m => m.Creator)
                 .WithMany(u => u.Messages)
-                .Map(u => u.MapKey("CreatorID"))
+                .HasForeignKey(m => m.CreatorId)
                 .WillCascadeOnDelete(false); // Can't use cascade due to cycles / multiple cascade paths, so we will need to be careful
 
             HasOptional(m => m.ParentMessage)
-                .WithMany()
+                .WithMany(m => m.Replies)
+                .HasForeignKey(m => m.ParentMessageId)
                 .WillCascadeOnDelete(false); // Also breaks due to cycles / multiple cascade paths
         }
     }

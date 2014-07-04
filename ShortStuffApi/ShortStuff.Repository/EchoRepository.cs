@@ -1,7 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Omu.ValueInjecter;
 using ShortStuff.Data;
 using ShortStuff.Domain.Entities;
+using ShortStuff.Domain.Enums;
+using ShortStuff.Repository.Extensions;
+using ShortStuff.Repository.ValueInjecter;
 
 namespace ShortStuff.Repository
 {
@@ -16,56 +20,53 @@ namespace ShortStuff.Repository
 
         public override IEnumerable<Echo> GetAll()
         {
-            //return _context.Echoes.Project()
-            //               .To<Echo>();
-            return null;
+            return _context.Echoes.BuildEcho();
         }
 
         public override Echo GetById(int id)
         {
-            //return _context.Echoes.Project()
-            //               .To<Echo>()
-            //               .FirstOrDefault(e => e.Id == id);
-            return null;
+            return _context.Echoes.FirstOrDefault(e => e.Id == id).BuildEcho();
         }
 
-        public override int Create(Echo entity)
+        public override CreateStatus<int> Create(Echo entity)
         {
-            //var echo = AutoMapper.Mapper.Map<Data.Entities.Echo>(entity);
-            //_context.Echoes.Add(echo);
-            //_context.SaveChanges();
-            //return echo.Id;
-            return 0;
+            if (_context.Echoes.Any(e => e.Id == entity.Id))
+            {
+                return new CreateStatus<int> { status = CreateStatusEnum.Conflict };
+            }
+            var echo = new Data.Entities.Echo();
+            echo.InjectFrom<SmartConventionInjection>(entity);
+            _context.Echoes.Add(echo);
+            _context.SaveChanges();
+
+            return new CreateStatus<int> { status = CreateStatusEnum.Created, Id = echo.Id };
         }
 
-        public override void Update(Echo entity)
+        public override UpdateStatus Update(Echo entity)
         {
-            //var echo = AutoMapper.Mapper.Map<Data.Entities.Echo>(entity);
+            var dbEcho = _context.Echoes.FirstOrDefault(e => e.Id == entity.Id)
+                                 .InjectFrom<NotNullInjection>(entity);
 
-            //var dbEcho = _context.ChangeTracker.Entries<Data.Entities.Echo>()
-            //                     .FirstOrDefault(e => e.Entity.Id == echo.Id);
+            if (dbEcho != null)
+            {
+                var changeTrackerEcho = _context.ChangeTracker.Entries<Data.Entities.Echo>()
+                                .FirstOrDefault(e => e.Entity.Id == entity.Id);
 
-            //if (dbEcho != null)
-            //{
-            //    dbEcho.CurrentValues.SetValues(echo);
-            //}
-            //else
-            //{
-            //    var tempEcho = new Data.Entities.Echo
-            //    {
-            //        Id = echo.Id
-            //    };
-            //    _context.Echoes.Attach(tempEcho);
-            //    _context.Entry(tempEcho).CurrentValues.SetValues(echo);
-            //}
-            //_context.SaveChanges();
+                changeTrackerEcho.CurrentValues.SetValues(dbEcho);
+                if (_context.SaveChanges() == 0)
+                {
+                    return UpdateStatus.NoChange;
+                }
+                return UpdateStatus.Updated;
+            }
+            return UpdateStatus.NotFound;
         }
 
-        public override void Delete(Echo entity)
+        public override void Delete(int id)
         {
-            //var echo = _context.Echoes.FirstOrDefault(e => e.Id == entity.Id);
-            //_context.Echoes.Remove(echo);
-            //_context.SaveChanges();
+            var echo = _context.Echoes.FirstOrDefault(e => e.Id == id);
+            _context.Echoes.Remove(echo);
+            _context.SaveChanges();
         }
     }
 }

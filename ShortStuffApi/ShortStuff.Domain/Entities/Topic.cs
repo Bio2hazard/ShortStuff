@@ -15,5 +15,13 @@ namespace ShortStuff.Domain.Entities
                 AddBrokenRule(new ValidationRule("Name", "Name_Missing"));
             }
         }
+
+        protected override void UpdateValidate()
+        {
+            if (Name != null && string.IsNullOrWhiteSpace(Name))
+            {
+                AddBrokenRule(new ValidationRule("Name", "Name_Whitespace"));
+            }
+        }
     }
 }

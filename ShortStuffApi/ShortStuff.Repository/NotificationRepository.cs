@@ -1,7 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Omu.ValueInjecter;
 using ShortStuff.Data;
 using ShortStuff.Domain.Entities;
+using ShortStuff.Domain.Enums;
+using ShortStuff.Repository.Extensions;
+using ShortStuff.Repository.ValueInjecter;
 
 namespace ShortStuff.Repository
 {
@@ -16,55 +20,52 @@ namespace ShortStuff.Repository
 
         public override IEnumerable<Notification> GetAll()
         {
-            //return _context.Notifications.Project()
-            //               .To<Notification>();
-            return null;
+            return _context.Notifications.BuildNotification();
         }
 
         public override Notification GetById(int id)
         {
-            //return _context.Notifications.Project()
-            //               .To<Notification>()
-            //               .FirstOrDefault(n => n.Id == id);
-            return null;
+            return _context.Notifications.FirstOrDefault(n => n.Id == id).BuildNotification();
         }
 
-        public override int Create(Notification entity)
+        public override CreateStatus<int> Create(Notification entity)
         {
-            //var notification = AutoMapper.Mapper.Map<Data.Entities.Notification>(entity);
-            //_context.Notifications.Add(notification);
-            //_context.SaveChanges();
-            //return notification.Id;
-            return 0;
+            if (_context.Notifications.Any(n => n.Id == entity.Id))
+            {
+                return new CreateStatus<int> { status = CreateStatusEnum.Conflict };
+            }
+
+            var notification = new Data.Entities.Notification();
+            notification.InjectFrom<SmartConventionInjection>(entity);
+            _context.Notifications.Add(notification);
+            _context.SaveChanges();
+
+            return new CreateStatus<int> { status = CreateStatusEnum.Created, Id = notification.Id };
         }
 
-        public override void Update(Notification entity)
+        public override UpdateStatus Update(Notification entity)
         {
-            //var notification = AutoMapper.Mapper.Map<Data.Entities.Notification>(entity);
+            var dbNotification = _context.Notifications.FirstOrDefault(n => n.Id == entity.Id)
+                                 .InjectFrom<NotNullInjection>(entity);
 
-            //var dbNotification = _context.ChangeTracker.Entries<Data.Entities.Notification>()
-            //                             .FirstOrDefault(n => n.Entity.Id == notification.Id);
+            if (dbNotification != null)
+            {
+                var changeTrackerNotification = _context.ChangeTracker.Entries<Data.Entities.Notification>()
+                                .FirstOrDefault(n => n.Entity.Id == entity.Id);
 
-            //if (dbNotification != null)
-            //{
-            //    dbNotification.CurrentValues.SetValues(notification);
-            //}
-            //else
-            //{
-            //    var tempNotification = new Data.Entities.Notification
-            //    {
-            //        Id = notification.Id
-            //    };
-            //    _context.Notifications.Attach(tempNotification);
-            //    _context.Entry(tempNotification)
-            //            .CurrentValues.SetValues(notification);
-            //}
-            //_context.SaveChanges();
+                changeTrackerNotification.CurrentValues.SetValues(dbNotification);
+                if (_context.SaveChanges() == 0)
+                {
+                    return UpdateStatus.NoChange;
+                }
+                return UpdateStatus.Updated;
+            }
+            return UpdateStatus.NotFound;
         }
 
-        public override void Delete(Notification entity)
+        public override void Delete(int id)
         {
-            var notification = _context.Notifications.FirstOrDefault(n => n.Id == entity.Id);
+            var notification = _context.Notifications.FirstOrDefault(n => n.Id == id);
             _context.Notifications.Remove(notification);
             _context.SaveChanges();
         }

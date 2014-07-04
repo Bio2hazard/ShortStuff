@@ -5,6 +5,7 @@ using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 using ShortStuff.Domain.Entities;
+using ShortStuff.Domain.Enums;
 
 namespace ShortStuff.Domain
 {
@@ -15,8 +16,8 @@ namespace ShortStuff.Domain
 
         IEnumerable<T> GetAll();
         T GetById(TId id);
-        TId Create(T entity);
-        void Update(T entity);
-        void Delete(T entity);
+        CreateStatus<TId> Create(T entity);
+        UpdateStatus Update(T entity);
+        void Delete(TId id);
     }
 }

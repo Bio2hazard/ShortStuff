@@ -4,6 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using ShortStuff.Domain;
 using ShortStuff.Domain.Entities;
+using ShortStuff.Domain.Enums;
 
 namespace ShortStuff.Repository
 {
@@ -24,8 +25,8 @@ namespace ShortStuff.Repository
 
         public abstract IEnumerable<T> GetAll();
         public abstract T GetById(TId id);
-        public abstract TId Create(T entity);
-        public abstract void Update(T entity);
-        public abstract void Delete(T entity);
+        public abstract CreateStatus<TId> Create(T entity);
+        public abstract UpdateStatus Update(T entity);
+        public abstract void Delete(TId id);
     }
 }

@@ -31,7 +31,7 @@ namespace ShortStuff.Data.Mappers
             // Relationships
             HasMany(t => t.Messages)
                 .WithMany()
-                .Map(m => m.MapLeftKey("MessageID"));
+                .Map(m => m.MapLeftKey("MessageId"));
         }
     }
 }

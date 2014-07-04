@@ -4,7 +4,7 @@ using Omu.ValueInjecter;
 using ShortStuff.Domain.Entities;
 using ShortStuff.Repository.ValueInjecter;
 
-namespace ShortStuff.Repository
+namespace ShortStuff.Repository.Extensions
 {
     public static class UserExtensions
     {
@@ -19,6 +19,9 @@ namespace ShortStuff.Repository
 
         private static bool _withMessages = false;
         private static int _messagesDepth = 0;
+
+        private static bool _withEchoes = false;
+        private static int _echoesDepth = 0;
 
         private static bool _withNotifications = false;
         private static int _notificationsDepth = 0;
@@ -40,6 +43,9 @@ namespace ShortStuff.Repository
             _withMessages = false;
             _messagesDepth = 0;
 
+            _withEchoes = false;
+            _echoesDepth = 0;
+
             _withNotifications = false;
             _notificationsDepth = 0;
 
@@ -54,11 +60,11 @@ namespace ShortStuff.Repository
             return users;
         }
 
-        public static Data.Entities.User WithFollowers(this Data.Entities.User users, int depth = 0)
+        public static Data.Entities.User WithFollowers(this Data.Entities.User user, int depth = 0)
         {
             _withFollowers = true;
             _followersDepth = depth;
-            return users;
+            return user;
         }
 
         public static System.Data.Entity.DbSet<ShortStuff.Data.Entities.User> WithFollowing(this System.Data.Entity.DbSet<ShortStuff.Data.Entities.User> users, int depth = 0)
@@ -68,11 +74,11 @@ namespace ShortStuff.Repository
             return users;
         }
 
-        public static Data.Entities.User WithFollowing(this Data.Entities.User users, int depth = 0)
+        public static Data.Entities.User WithFollowing(this Data.Entities.User user, int depth = 0)
         {
             _withFollowing = true;
             _followingDepth = depth;
-            return users;
+            return user;
         }
 
         public static System.Data.Entity.DbSet<ShortStuff.Data.Entities.User> WithFavorites(this System.Data.Entity.DbSet<ShortStuff.Data.Entities.User> users, int depth = 0)
@@ -81,11 +87,11 @@ namespace ShortStuff.Repository
             _favoritesDepth = depth;
             return users;
         }
-        public static Data.Entities.User WithFavorites(this Data.Entities.User users, int depth = 0)
+        public static Data.Entities.User WithFavorites(this Data.Entities.User user, int depth = 0)
         {
             _withFavorites = true;
             _favoritesDepth = depth;
-            return users;
+            return user;
         }
 
         public static System.Data.Entity.DbSet<ShortStuff.Data.Entities.User> WithMessages(this System.Data.Entity.DbSet<ShortStuff.Data.Entities.User> users, int depth = 0)
@@ -94,11 +100,24 @@ namespace ShortStuff.Repository
             _messagesDepth = depth;
             return users;
         }
-        public static Data.Entities.User WithMessages(this Data.Entities.User users, int depth = 0)
+        public static Data.Entities.User WithMessages(this Data.Entities.User user, int depth = 0)
         {
             _withMessages = true;
             _messagesDepth = depth;
+            return user;
+        }
+
+        public static System.Data.Entity.DbSet<ShortStuff.Data.Entities.User> WithEchoes(this System.Data.Entity.DbSet<ShortStuff.Data.Entities.User> users, int depth = 0)
+        {
+            _withEchoes = true;
+            _echoesDepth = depth;
             return users;
+        }
+        public static Data.Entities.User WithEchoes(this Data.Entities.User user, int depth = 0)
+        {
+            _withEchoes = true;
+            _echoesDepth = depth;
+            return user;
         }
 
         public static System.Data.Entity.DbSet<ShortStuff.Data.Entities.User> WithNotifications(this System.Data.Entity.DbSet<ShortStuff.Data.Entities.User> users, int depth = 0)
@@ -107,11 +126,11 @@ namespace ShortStuff.Repository
             _notificationsDepth = depth;
             return users;
         }
-        public static Data.Entities.User WithNotifications(this Data.Entities.User users, int depth = 0)
+        public static Data.Entities.User WithNotifications(this Data.Entities.User user, int depth = 0)
         {
             _withNotifications = true;
             _notificationsDepth = depth;
-            return users;
+            return user;
         }
 
         public static System.Data.Entity.DbSet<ShortStuff.Data.Entities.User> WithSubscribedTopics(this System.Data.Entity.DbSet<ShortStuff.Data.Entities.User> users, int depth = 0)
@@ -120,11 +139,11 @@ namespace ShortStuff.Repository
             _subscribedTopicsDepth = depth;
             return users;
         }
-        public static Data.Entities.User WithSubscribedTopics(this Data.Entities.User users, int depth = 0)
+        public static Data.Entities.User WithSubscribedTopics(this Data.Entities.User user, int depth = 0)
         {
             _withSubscribedTopics = true;
             _subscribedTopicsDepth = depth;
-            return users;
+            return user;
         }
 
         public static IEnumerable<User> BuildUser(this System.Data.Entity.DbSet<ShortStuff.Data.Entities.User> dbUser)
@@ -139,12 +158,13 @@ namespace ShortStuff.Repository
                 Picture = u.Picture,
                 Tag = u.Tag,
                 Name = u.Name,
-                Followers = _withFollowers ? u.Followers.InjectFromHelper(new User(), _followersDepth) : null,
-                Following = _withFollowing ? u.Following.InjectFromHelper(new User(), _followingDepth) : null,
-                Favorites = _withFavorites ? u.Favorites.InjectFromHelper(new Message(), _favoritesDepth) : null,
-                Messages = _withMessages ? u.Messages.InjectFromHelper(new Message(), _messagesDepth) : null,
-                Notifications = _withNotifications ? u.Notifications.InjectFromHelper(new Notification(), _notificationsDepth) : null,
-                SubscribedTopics = _withSubscribedTopics ? u.SubscribedTopics.InjectFromHelper(new Topic(), _subscribedTopicsDepth) : null
+                Followers = (_withFollowers && u.Followers.Any()) ? u.Followers.InjectFromHelper(new User(), _followersDepth) : null,
+                Following = (_withFollowing && u.Following.Any()) ? u.Following.InjectFromHelper(new User(), _followingDepth) : null,
+                Favorites = (_withFavorites && u.Favorites.Any()) ? u.Favorites.InjectFromHelper(new Message(), _favoritesDepth) : null,
+                Messages = (_withMessages && u.Messages.Any()) ? u.Messages.InjectFromHelper(new Message(), _messagesDepth) : null,
+                Echoes = (_withEchoes && u.Echoes.Any()) ? u.Echoes.InjectFromHelper(new Echo(), _echoesDepth) : null,
+                Notifications = (_withNotifications && u.Notifications.Any()) ? u.Notifications.InjectFromHelper(new Notification(), _notificationsDepth) : null,
+                SubscribedTopics = (_withSubscribedTopics && u.SubscribedTopics.Any()) ? u.SubscribedTopics.InjectFromHelper(new Topic(), _subscribedTopicsDepth) : null
             }).ToList();
 
             Reset();
@@ -164,6 +184,7 @@ namespace ShortStuff.Repository
             propertyDict.Add("Followers", new SinglePropertyDepthInjection.PropPair { Depth = _followersDepth, Ignored = !_withFollowers });
             propertyDict.Add("Following", new SinglePropertyDepthInjection.PropPair { Depth = _followingDepth, Ignored = !_withFollowing });
             propertyDict.Add("Messages", new SinglePropertyDepthInjection.PropPair { Depth = _messagesDepth, Ignored = !_withMessages });
+            propertyDict.Add("Echoes", new SinglePropertyDepthInjection.PropPair {Depth = _echoesDepth, Ignored = !_withEchoes });
             propertyDict.Add("Notifications", new SinglePropertyDepthInjection.PropPair { Depth = _notificationsDepth, Ignored = !_withNotifications });
             propertyDict.Add("SubscribedTopics", new SinglePropertyDepthInjection.PropPair { Depth = _subscribedTopicsDepth, Ignored = !_withSubscribedTopics });
 

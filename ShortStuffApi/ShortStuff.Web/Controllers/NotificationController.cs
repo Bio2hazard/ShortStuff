@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -13,21 +12,20 @@ using ShortStuff.Web.Extensions;
 
 namespace ShortStuff.Web.Controllers
 {
-    public class UserController : BaseController
+    public class NotificationController : BaseController
     {
-        private IUserService _userService;
-        
+        private INotificationService _notificationService;
 
-        public UserController(IUnitOfWork unitOfWork, IUserService userService) : base(unitOfWork)
+        public NotificationController(IUnitOfWork unitOfWork, INotificationService notificationService) : base(unitOfWork)
         {
-            _userService = userService;
+            _notificationService = notificationService;
         }
 
         public IHttpActionResult Get()
         {
             try
             {
-                return GetHttpActionResult(UnitOfWork.UserRepository.GetAll());
+                return GetHttpActionResult(UnitOfWork.NotificationRepository.GetAll());
             }
             catch (Exception ex)
             {
@@ -39,11 +37,11 @@ namespace ShortStuff.Web.Controllers
             }
         }
 
-        public IHttpActionResult Get(decimal id)
+        public IHttpActionResult Get(int id)
         {
             try
             {
-                return GetHttpActionResult(UnitOfWork.UserRepository.GetById(id));
+                return GetHttpActionResult(UnitOfWork.NotificationRepository.GetById(id));
             }
             catch (Exception ex)
             {
@@ -55,7 +53,7 @@ namespace ShortStuff.Web.Controllers
             }
         }
 
-        public IHttpActionResult Post(User data)
+        public IHttpActionResult Post(Notification data)
         {
             var brokenRules = data.GetBrokenRules();
             var validationRules = brokenRules as IList<ValidationRule> ?? brokenRules.ToList();
@@ -64,17 +62,17 @@ namespace ShortStuff.Web.Controllers
                 return ApiControllerExtension.BadRequest(this, validationRules, data.GetType().Name);
             }
 
-            var status = UnitOfWork.UserRepository.Create(data);
+            var status = UnitOfWork.NotificationRepository.Create(data);
 
             if (status.status == CreateStatusEnum.Conflict)
                 return Conflict();
 
-            return CreateHttpActionResult("User", status.Id);
+            return CreateHttpActionResult("Notification", status.Id);
         }
 
         [HttpPatch]
         [HttpPut]
-        public IHttpActionResult Put(decimal id, User data)
+        public IHttpActionResult Put(int id, Notification data)
         {
             var brokenRules = data.GetUpdateBrokenRules();
             var validationRules = brokenRules as IList<ValidationRule> ?? brokenRules.ToList();
@@ -84,19 +82,19 @@ namespace ShortStuff.Web.Controllers
             }
             data.Id = id;
 
-            var status = UnitOfWork.UserRepository.Update(data);
+            var status = UnitOfWork.NotificationRepository.Update(data);
 
             switch (status)
             {
-                    case UpdateStatus.NotFound:
+                case UpdateStatus.NotFound:
                     return Post(data);
             }
             return StatusCode(HttpStatusCode.NoContent);
         }
 
-        public IHttpActionResult Delete(decimal id)
+        public IHttpActionResult Delete(int id)
         {
-            UnitOfWork.UserRepository.Delete(id);
+            UnitOfWork.NotificationRepository.Delete(id);
             return StatusCode(HttpStatusCode.NoContent);
         }
     }

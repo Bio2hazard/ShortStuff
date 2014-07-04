@@ -1,7 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Omu.ValueInjecter;
 using ShortStuff.Data;
 using ShortStuff.Domain.Entities;
+using ShortStuff.Domain.Enums;
+using ShortStuff.Repository.Extensions;
+using ShortStuff.Repository.ValueInjecter;
 
 namespace ShortStuff.Repository
 {
@@ -16,54 +20,53 @@ namespace ShortStuff.Repository
 
         public override IEnumerable<Message> GetAll()
         {
-            //return _context.Messages.Project()
-            //               .To<Message>();
-            return null;
+            return _context.Messages.BuildMessage();
         }
 
         public override Message GetById(int id)
         {
-            //return _context.Messages.Project()
-            //               .To<Message>()
-            //               .FirstOrDefault(m => m.Id == id);
-            return null;
+            return _context.Messages.FirstOrDefault(m => m.Id == id).BuildMessage();
         }
 
-        public override int Create(Message entity)
+        public override CreateStatus<int> Create(Message entity)
         {
-            //var message = AutoMapper.Mapper.Map<Data.Entities.Message>(entity);
-            //_context.Messages.Add(message);
-            //_context.SaveChanges();
-            //return message.Id;
-            return 0;
+            if (_context.Messages.Any(m => m.Id == entity.Id))
+            {
+                return new CreateStatus<int> { status = CreateStatusEnum.Conflict };
+            }
+            var message = new Data.Entities.Message();
+            message.InjectFrom<SmartConventionInjection>(entity);
+            _context.Messages.Add(message);
+            _context.SaveChanges();
+
+            return new CreateStatus<int>{status = CreateStatusEnum.Created, Id = message.Id };
         }
 
-        public override void Update(Message entity)
+        public override UpdateStatus Update(Message entity)
         {
-            //var message = AutoMapper.Mapper.Map<Data.Entities.Message>(entity);
-            //var dbMessage = _context.ChangeTracker.Entries<Data.Entities.Message>()
-            //                        .FirstOrDefault(m => m.Entity.Id == message.Id);
-            //if (dbMessage != null)
-            //{
-            //    dbMessage.CurrentValues.SetValues(message);
-            //}
-            //else
-            //{
-            //    var tempMessage = new Data.Entities.Message
-            //    {
-            //        Id = message.Id
-            //    };
-            //    _context.Messages.Attach(tempMessage);
-            //    _context.Entry(tempMessage).CurrentValues.SetValues(message);
-            //}
-            //_context.SaveChanges();
+            var dbMessage = _context.Messages.FirstOrDefault(m => m.Id == entity.Id)
+                                 .InjectFrom<NotNullInjection>(entity);
+
+            if (dbMessage != null)
+            {
+                var changeTrackerMessage = _context.ChangeTracker.Entries<Data.Entities.Message>()
+                                .FirstOrDefault(m => m.Entity.Id == entity.Id);
+
+                changeTrackerMessage.CurrentValues.SetValues(dbMessage);
+                if (_context.SaveChanges() == 0)
+                {
+                    return UpdateStatus.NoChange;
+                }
+                return UpdateStatus.Updated;
+            }
+            return UpdateStatus.NotFound;
         }
 
-        public override void Delete(Message entity)
+        public override void Delete(int id)
         {
-            //var message = _context.Messages.FirstOrDefault(m => m.Id == entity.Id);
-            //_context.Messages.Remove(message);
-            //_context.SaveChanges();
+            var message = _context.Messages.FirstOrDefault(m => m.Id == id);
+            _context.Messages.Remove(message);
+            _context.SaveChanges();
         }
     }
 }

@@ -1,7 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Omu.ValueInjecter;
 using ShortStuff.Data;
 using ShortStuff.Domain.Entities;
+using ShortStuff.Domain.Enums;
+using ShortStuff.Repository.Extensions;
+using ShortStuff.Repository.ValueInjecter;
 
 namespace ShortStuff.Repository
 {
@@ -16,54 +20,52 @@ namespace ShortStuff.Repository
 
         public override IEnumerable<Topic> GetAll()
         {
-            //return _context.Topics.Project()
-            //               .To<Topic>();
-            return null;
+            return _context.Topics.BuildTopic();
         }
 
         public override Topic GetById(int id)
         {
-            //return _context.Topics.Project()
-            //               .To<Topic>()
-            //               .FirstOrDefault(t => t.Id == id);
-            return null;
+            return _context.Topics.FirstOrDefault(t => t.Id == id).BuildTopic();
         }
 
-        public override int Create(Topic entity)
+        public override CreateStatus<int> Create(Topic entity)
         {
-            //var topic = AutoMapper.Mapper.Map<Data.Entities.Topic>(entity);
-            //_context.Topics.Add(topic);
-            //_context.SaveChanges();
-            //return topic.Id;
-            return 0;
+            if (_context.Topics.Any(t => t.Id == entity.Id))
+            {
+                return new CreateStatus<int>{ status = CreateStatusEnum.Conflict };
+            }
+
+            var topic = new Data.Entities.Topic();
+            topic.InjectFrom<SmartConventionInjection>(entity);
+            _context.Topics.Add(topic);
+            _context.SaveChanges();
+
+            return new CreateStatus<int> { status = CreateStatusEnum.Created, Id = topic.Id };
         }
 
-        public override void Update(Topic entity)
+        public override UpdateStatus Update(Topic entity)
         {
-            //var topic = AutoMapper.Mapper.Map<Data.Entities.Topic>(entity);
+            var dbTopic = _context.Topics.FirstOrDefault(t => t.Id == entity.Id)
+                                  .InjectFrom<NotNullInjection>(entity);
 
-            //var dbTopic = _context.ChangeTracker.Entries<Data.Entities.Topic>()
-            //                      .FirstOrDefault(t => t.Entity.Id == topic.Id);
-
-            //if (dbTopic != null)
-            //{
-            //    dbTopic.CurrentValues.SetValues(topic);
-            //}
-            //else
-            //{
-            //    var tempTopic = new Data.Entities.Topic
-            //    {
-            //        Id = topic.Id
-            //    };
-            //    _context.Topics.Attach(tempTopic);
-            //    _context.Entry(tempTopic).CurrentValues.SetValues(topic);
-            //}
-            //_context.SaveChanges();
+            if (dbTopic != null)
+            {
+                var changeTrackerTopic = _context.ChangeTracker.Entries<Data.Entities.Topic>()
+                                                 .FirstOrDefault(t => t.Entity.Id == entity.Id);
+            
+                changeTrackerTopic.CurrentValues.SetValues(dbTopic);
+                if (_context.SaveChanges() == 0)
+                {
+                    return UpdateStatus.NoChange;
+                }
+                return UpdateStatus.Updated;
+            }
+            return UpdateStatus.NotFound;
         }
 
-        public override void Delete(Topic entity)
+        public override void Delete(int id)
         {
-            var topic = _context.Topics.FirstOrDefault(t => t.Id == entity.Id);
+            var topic = _context.Topics.FirstOrDefault(t => t.Id == id);
             _context.Topics.Remove(topic);
             _context.SaveChanges();
         }

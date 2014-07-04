@@ -15,6 +15,8 @@ namespace ShortStuff.Data.Mappers
             // Primary Key
             HasKey(u => u.Id);
             Property(u => u.Id)
+                .HasPrecision(21,0)
+                .HasColumnType("Numeric")
                 .IsRequired();
 
             // Properties
@@ -30,8 +32,8 @@ namespace ShortStuff.Data.Mappers
             Property(u => u.Tag)
                 .IsRequired()
                 .IsUnicode(false)
-                .HasMaxLength(255)
-                .HasColumnAnnotation("Index", new IndexAnnotation(new IndexAttribute()));
+                .HasMaxLength(140)
+                .HasColumnAnnotation("Index", new IndexAnnotation(new IndexAttribute("IX_Tag"){IsUnique = true}));
 
             Property(u => u.Picture)
                 .IsOptional();
@@ -42,21 +44,21 @@ namespace ShortStuff.Data.Mappers
                 .Map(u =>
                 {
                     u.ToTable("Followers");
-                    u.MapLeftKey("FollowerID");
-                    u.MapRightKey("FollowingID");
+                    u.MapLeftKey("FollowerId");
+                    u.MapRightKey("FollowingId");
                 });
 
             HasMany(u => u.Favorites)
                 .WithMany()
-                .Map(u => u.MapLeftKey("MessageID"));
+                .Map(u => u.MapLeftKey("MessageId"));
 
             HasMany(u => u.SubscribedTopics)
                 .WithMany(t => t.Subscribers)
                 .Map(u =>
                 {
                     u.ToTable("TopicSubscribers");
-                    u.MapLeftKey("UserID");
-                    u.MapRightKey("TopicID");
+                    u.MapLeftKey("UserId");
+                    u.MapRightKey("TopicId");
                 });
         }
     }
