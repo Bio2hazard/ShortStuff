@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 using System.Web.Http;
+using System.Web.Http.Results;
 using ShortStuff.Domain;
 using ShortStuff.Domain.Entities;
 using ShortStuff.Domain.Enums;
@@ -11,37 +13,21 @@ using ShortStuff.Web.Extensions;
 
 namespace ShortStuff.Web.Controllers
 {
-    public class MessageController : BaseController
+    public class MessageAsyncController : BaseController
     {
         private IMessageService _messageService;
         
 
-        public MessageController(IUnitOfWork unitOfWork, IMessageService messageService) : base(unitOfWork)
+        public MessageAsyncController(IUnitOfWork unitOfWork, IMessageService messageService) : base(unitOfWork)
         {
             _messageService = messageService;
         }
 
-        public IHttpActionResult Get()
+        public async Task<IHttpActionResult> Get()
         {
             try
             {
-                return GetHttpActionResult(UnitOfWork.MessageRepository.GetAll());
-            }
-            catch (Exception ex)
-            {
-#if DEBUG
-                return InternalServerError(ex);
-#else
-                return InternalServerError();
-#endif
-            }
-        }
-        
-        public IHttpActionResult Get(int id)
-        {
-            try
-            {
-                return GetHttpActionResult(UnitOfWork.MessageRepository.GetById(id));
+                return GetHttpActionResult(await UnitOfWork.MessageRepository.GetAllAsync());
             }
             catch (Exception ex)
             {
@@ -53,7 +39,23 @@ namespace ShortStuff.Web.Controllers
             }
         }
 
-        public IHttpActionResult Post(Message data)
+        public async Task<IHttpActionResult> Get(int id)
+        {
+            try
+            {
+                return GetHttpActionResult(await UnitOfWork.MessageRepository.GetByIdAsync(id));
+            }
+            catch (Exception ex)
+            {
+#if DEBUG
+                return InternalServerError(ex);
+#else
+                return InternalServerError();
+#endif
+            }
+        }
+
+        public async Task<IHttpActionResult> Post(Message data)
         {
             var brokenRules = data.GetBrokenRules();
             var validationRules = brokenRules as IList<ValidationRule> ?? brokenRules.ToList();
@@ -62,17 +64,17 @@ namespace ShortStuff.Web.Controllers
                 return ApiControllerExtension.BadRequest(this, validationRules, data.GetType().Name);
             }
 
-            var status = UnitOfWork.MessageRepository.Create(data);
+            var status = await UnitOfWork.MessageRepository.CreateAsync(data);
 
             if (status.Status == CreateStatusEnum.Conflict)
                 return Conflict();
 
-            return CreateHttpActionResult("Message", status.Id);
+            return CreateHttpActionResult("MessageAsync", status.Id);
         }
 
         [HttpPatch]
         [HttpPut]
-        public IHttpActionResult Put(int id, Message data)
+        public async Task<IHttpActionResult> Put(int id, Message data)
         {
             var brokenRules = data.GetUpdateBrokenRules();
             var validationRules = brokenRules as IList<ValidationRule> ?? brokenRules.ToList();
@@ -82,19 +84,19 @@ namespace ShortStuff.Web.Controllers
             }
             data.Id = id;
 
-            var status = UnitOfWork.MessageRepository.Update(data);
+            var status = await UnitOfWork.MessageRepository.UpdateAsync(data);
 
             switch (status)
             {
                     case UpdateStatus.NotFound:
-                    return Post(data);
+                    return await Post(data);
             }
             return StatusCode(HttpStatusCode.NoContent);
         }
 
-        public IHttpActionResult Delete(int id)
+        public async Task<IHttpActionResult> Delete(int id)
         {
-            UnitOfWork.MessageRepository.Delete(id);
+            await UnitOfWork.MessageRepository.DeleteAsync(id);
             return StatusCode(HttpStatusCode.NoContent);
         }
     }

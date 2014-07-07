@@ -1,7 +1,7 @@
 ﻿using ShortStuff.Domain;
 using ShortStuff.Domain.Entities;
 
-namespace ShortStuff.Domain
+namespace ShortStuff.Repository
 {
     public class UnitOfWork : IUnitOfWork
     {

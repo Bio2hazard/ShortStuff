@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Web.Http;
 using ShortStuff.Domain;
 using ShortStuff.Domain.Entities;
@@ -64,7 +63,7 @@ namespace ShortStuff.Web.Controllers
 
             var status = UnitOfWork.TopicRepository.Create(data);
 
-            if (status.status == CreateStatusEnum.Conflict)
+            if (status.Status == CreateStatusEnum.Conflict)
                 return Conflict();
 
             return CreateHttpActionResult("Topic", status.Id);

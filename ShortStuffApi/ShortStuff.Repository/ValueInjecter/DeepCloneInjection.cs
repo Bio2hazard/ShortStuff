@@ -29,12 +29,14 @@ namespace ShortStuff.Repository.ValueInjecter
             if (mi.SourceProp.PropertyType.IsArray)
             {
                 var arr = sourceVal as Array;
+// ReSharper disable once PossibleNullReferenceException
                 var arrayClone = arr.Clone() as Array;
 
                 for (var index = 0; index < arr.Length; index++)
                 {
                     var arriVal = arr.GetValue(index);
-                    if (arriVal.GetType().IsValueType || arriVal.GetType() == typeof(string)) continue;
+                    if (arriVal.GetType().IsValueType || arriVal is string) continue;
+// ReSharper disable once PossibleNullReferenceException
                     arrayClone.SetValue(Activator.CreateInstance(arriVal.GetType()).InjectFrom<DeepCloneInjection>(arriVal), index);
                 }
                 SetValue(mi.TargetProp, mi.Target, arrayClone);
@@ -60,6 +62,7 @@ namespace ShortStuff.Repository.ValueInjecter
                     else
                     {
                         var addMethod = tlist.GetMethod("Add");
+// ReSharper disable once PossibleNullReferenceException
                         foreach (var o in sourceVal as IEnumerable)
                         {
                             addMethod.Invoke(list, new[] { Activator.CreateInstance(genericArgument).InjectFrom<DeepCloneInjection>(o) });

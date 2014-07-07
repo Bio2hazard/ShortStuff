@@ -2,7 +2,7 @@
 
 namespace ShortStuff.Data.Entities
 {
-    public class Echo
+    public class Echo : IDataEntity<int>
     {
         public int Id { get; set; }
         public virtual User Creator { get; set; }

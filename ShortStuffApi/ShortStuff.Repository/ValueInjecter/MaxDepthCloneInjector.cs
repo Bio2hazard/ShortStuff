@@ -4,8 +4,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using FastMember;
 using Omu.ValueInjecter;
 
@@ -47,19 +45,22 @@ namespace ShortStuff.Repository.ValueInjecter
             if (mi.SourceProp.PropertyType.IsArray)
             {
                 var arr = sourceVal as Array;
+// ReSharper disable once PossibleNullReferenceException
                 var arrayClone = arr.Clone() as Array;
 
                 for (var index = 0; index < arr.Length; index++)
                 {
                     var arriVal = arr.GetValue(index);
-                    if (arriVal.GetType().IsValueType || arriVal.GetType() == typeof(string)) continue;
+                    if (arriVal.GetType().IsValueType || arriVal is string) continue;
                     if (_maxDepth > 1)
                     {
+// ReSharper disable once PossibleNullReferenceException
                         arrayClone.SetValue(Activator.CreateInstance(arriVal.GetType())
                                                      .InjectFrom(new MaxDepthCloneInjector(_maxDepth-1), arriVal), index);
                     }
                     else
                     {
+// ReSharper disable once PossibleNullReferenceException
                         arrayClone.SetValue(Activator.CreateInstance(arriVal.GetType()).InjectFrom<SmartConventionInjection>(arriVal), index);
                     }
                 }
@@ -86,6 +87,7 @@ namespace ShortStuff.Repository.ValueInjecter
                     else
                     {
                         var addMethod = tlist.GetMethod("Add");
+                        // ReSharper disable once PossibleNullReferenceException
                         foreach (var o in sourceVal as IEnumerable)
                         {
                             if (_maxDepth > 1)

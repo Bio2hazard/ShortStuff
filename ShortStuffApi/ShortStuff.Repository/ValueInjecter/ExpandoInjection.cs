@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel;
 using System.Dynamic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using FastMember;
 using Omu.ValueInjecter;
 
@@ -24,7 +19,7 @@ namespace ShortStuff.Repository.ValueInjecter
         public ExpandoInjection()
         {
             _compositeObject = new ExpandoObject();
-            _compositeCollection = (ICollection<KeyValuePair<string, object>>)_compositeObject;
+            _compositeCollection = _compositeObject;
 
         }
 
@@ -47,7 +42,6 @@ namespace ShortStuff.Repository.ValueInjecter
         protected void ExecuteMatch(SmartMatchInfo mi)
         {
             var sourceValue = GetValue(mi.SourceProp, mi.Source);
-            var targetValue = GetValue(mi.TargetProp, mi.Target);
             _compositeCollection.Add(new KeyValuePair<string, object>(mi.SourceProp.Name, sourceValue));
         }
 
@@ -85,17 +79,20 @@ namespace ShortStuff.Repository.ValueInjecter
                 }
             }
 
-            foreach (var pair in path.MatchingProps)
+            if (path != null)
             {
-                var sourceProp = sourceProps.GetByName(pair.Key);
-                var targetProp = targetProps.GetByName(pair.Value);
-                ExecuteMatch(new SmartMatchInfo
+                foreach (var pair in path.MatchingProps)
                 {
-                    Source = source,
-                    Target = target,
-                    SourceProp = sourceProp,
-                    TargetProp = targetProp
-                });
+                    var sourceProp = sourceProps.GetByName(pair.Key);
+                    var targetProp = targetProps.GetByName(pair.Value);
+                    ExecuteMatch(new SmartMatchInfo
+                    {
+                        Source = source,
+                        Target = target,
+                        SourceProp = sourceProp,
+                        TargetProp = targetProp
+                    });
+                }
             }
 
             dynamic composite = _compositeObject;

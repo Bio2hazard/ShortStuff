@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 using System.Web.Http;
+using System.Web.Http.Results;
 using ShortStuff.Domain;
 using ShortStuff.Domain.Entities;
 using ShortStuff.Domain.Enums;
@@ -11,37 +13,20 @@ using ShortStuff.Web.Extensions;
 
 namespace ShortStuff.Web.Controllers
 {
-    public class MessageController : BaseController
+    public class NotificationAsyncController : BaseController
     {
-        private IMessageService _messageService;
-        
+        private INotificationService _notificationService;
 
-        public MessageController(IUnitOfWork unitOfWork, IMessageService messageService) : base(unitOfWork)
+        public NotificationAsyncController(IUnitOfWork unitOfWork, INotificationService notificationService) : base(unitOfWork)
         {
-            _messageService = messageService;
+            _notificationService = notificationService;
         }
 
-        public IHttpActionResult Get()
+        public async Task<IHttpActionResult> Get()
         {
             try
             {
-                return GetHttpActionResult(UnitOfWork.MessageRepository.GetAll());
-            }
-            catch (Exception ex)
-            {
-#if DEBUG
-                return InternalServerError(ex);
-#else
-                return InternalServerError();
-#endif
-            }
-        }
-        
-        public IHttpActionResult Get(int id)
-        {
-            try
-            {
-                return GetHttpActionResult(UnitOfWork.MessageRepository.GetById(id));
+                return GetHttpActionResult(await UnitOfWork.NotificationRepository.GetAllAsync());
             }
             catch (Exception ex)
             {
@@ -53,7 +38,23 @@ namespace ShortStuff.Web.Controllers
             }
         }
 
-        public IHttpActionResult Post(Message data)
+        public async Task<IHttpActionResult> Get(int id)
+        {
+            try
+            {
+                return GetHttpActionResult(await UnitOfWork.NotificationRepository.GetByIdAsync(id));
+            }
+            catch (Exception ex)
+            {
+#if DEBUG
+                return InternalServerError(ex);
+#else
+                return InternalServerError();
+#endif
+            }
+        }
+
+        public async Task<IHttpActionResult> Post(Notification data)
         {
             var brokenRules = data.GetBrokenRules();
             var validationRules = brokenRules as IList<ValidationRule> ?? brokenRules.ToList();
@@ -62,17 +63,17 @@ namespace ShortStuff.Web.Controllers
                 return ApiControllerExtension.BadRequest(this, validationRules, data.GetType().Name);
             }
 
-            var status = UnitOfWork.MessageRepository.Create(data);
+            var status = await UnitOfWork.NotificationRepository.CreateAsync(data);
 
             if (status.Status == CreateStatusEnum.Conflict)
                 return Conflict();
 
-            return CreateHttpActionResult("Message", status.Id);
+            return CreateHttpActionResult("NotificationAsync", status.Id);
         }
 
         [HttpPatch]
         [HttpPut]
-        public IHttpActionResult Put(int id, Message data)
+        public async Task<IHttpActionResult> Put(int id, Notification data)
         {
             var brokenRules = data.GetUpdateBrokenRules();
             var validationRules = brokenRules as IList<ValidationRule> ?? brokenRules.ToList();
@@ -82,19 +83,19 @@ namespace ShortStuff.Web.Controllers
             }
             data.Id = id;
 
-            var status = UnitOfWork.MessageRepository.Update(data);
+            var status = await UnitOfWork.NotificationRepository.UpdateAsync(data);
 
             switch (status)
             {
-                    case UpdateStatus.NotFound:
-                    return Post(data);
+                case UpdateStatus.NotFound:
+                    return await Post(data);
             }
             return StatusCode(HttpStatusCode.NoContent);
         }
 
-        public IHttpActionResult Delete(int id)
+        public async Task<IHttpActionResult> Delete(int id)
         {
-            UnitOfWork.MessageRepository.Delete(id);
+            await UnitOfWork.NotificationRepository.DeleteAsync(id);
             return StatusCode(HttpStatusCode.NoContent);
         }
     }

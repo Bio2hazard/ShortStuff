@@ -2,13 +2,13 @@
 
 namespace ShortStuff.Data.Entities
 {
-    public class Topic
+    public class Topic : IDataEntity<int>
     {
-        public Topic()
-        {
-            Messages = new List<Message>();
-            Subscribers = new List<User>();
-        }
+        //public Topic()
+        //{
+        //    Messages = new List<Message>();
+        //    Subscribers = new List<User>();
+        //}
 
         public int Id { get; set; }
         public string Name { get; set; }

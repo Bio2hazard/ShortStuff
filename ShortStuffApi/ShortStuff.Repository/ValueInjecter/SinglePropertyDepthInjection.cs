@@ -15,9 +15,9 @@ namespace ShortStuff.Repository.ValueInjecter
             public IDictionary<string, string> MatchingProps { get; set; }
         }
 
-         private Dictionary<string, PropPair> _propertyDict;
+         private Dictionary<string, int> _propertyDict;
 
-        public SinglePropertyDepthInjection(Dictionary<string, PropPair> propertyDict)
+        public SinglePropertyDepthInjection(Dictionary<string, int> propertyDict)
         {
             _propertyDict = propertyDict;
         }
@@ -30,10 +30,7 @@ namespace ShortStuff.Repository.ValueInjecter
         protected void ExecuteDeepMatch(SmartMatchInfo mi)
         {
             var sourceVal = GetValue(mi.SourceProp, mi.Source);
-            PropPair sourcePropPair;
-            bool propPairFound = _propertyDict.TryGetValue(mi.SourceProp.Name, out sourcePropPair);
-
-            if (sourceVal == null) return;
+            if (sourceVal == null) return; 
 
             //for value types and string just return the value as is
             if (mi.SourceProp.PropertyType.IsValueType || mi.SourceProp.PropertyType == typeof(string))
@@ -42,23 +39,29 @@ namespace ShortStuff.Repository.ValueInjecter
                 return;
             }
 
+            int propDepth;
+            bool propFound = _propertyDict.TryGetValue(mi.SourceProp.Name, out propDepth);
+
             //handle arrays
             if (mi.SourceProp.PropertyType.IsArray)
             {
                 var arr = sourceVal as Array;
+// ReSharper disable once PossibleNullReferenceException
                 var arrayClone = arr.Clone() as Array;
 
                 for (var index = 0; index < arr.Length; index++)
                 {
                     var arriVal = arr.GetValue(index);
-                    if (arriVal.GetType().IsValueType || arriVal.GetType() == typeof(string)) continue;
-                    if (propPairFound && sourcePropPair.Depth > 0)
+                    if (arriVal.GetType().IsValueType || arriVal is string) continue;
+                    if (propFound && propDepth > 0)
                     {
+// ReSharper disable once PossibleNullReferenceException
                         arrayClone.SetValue(Activator.CreateInstance(arriVal.GetType())
-                                                     .InjectFrom(new MaxDepthCloneInjector(sourcePropPair.Depth), arriVal), index);
+                                                     .InjectFrom(new MaxDepthCloneInjector(propDepth), arriVal), index);
                     }
                     else
                     {
+// ReSharper disable once PossibleNullReferenceException
                         arrayClone.SetValue(Activator.CreateInstance(arriVal.GetType()).InjectFrom<SmartConventionInjection>(arriVal), index);
                     }
                 }
@@ -85,11 +88,12 @@ namespace ShortStuff.Repository.ValueInjecter
                     else
                     {
                         var addMethod = tlist.GetMethod("Add");
+// ReSharper disable once PossibleNullReferenceException
                         foreach (var o in sourceVal as IEnumerable)
                         {
-                            if (propPairFound && sourcePropPair.Depth > 0)
+                            if (propFound && propDepth > 0)
                             {
-                                addMethod.Invoke(list, new[] { Activator.CreateInstance(genericArgument).InjectFrom(new MaxDepthCloneInjector(sourcePropPair.Depth), o) });
+                                addMethod.Invoke(list, new[] { Activator.CreateInstance(genericArgument).InjectFrom(new MaxDepthCloneInjector(propDepth), o) });
                             }
                             else
                             {
@@ -106,9 +110,9 @@ namespace ShortStuff.Repository.ValueInjecter
             }
 
             //for simple object types create a new instace and apply the clone injection on it
-            if (propPairFound && sourcePropPair.Depth > 0)
+            if (propFound && propDepth > 0)
             {
-                SetValue(mi.TargetProp, mi.Target, Activator.CreateInstance(mi.TargetProp.PropertyType).InjectFrom(new MaxDepthCloneInjector(sourcePropPair.Depth), sourceVal));
+                SetValue(mi.TargetProp, mi.Target, Activator.CreateInstance(mi.TargetProp.PropertyType).InjectFrom(new MaxDepthCloneInjector(propDepth), sourceVal));
             }
             else
             {
@@ -133,11 +137,14 @@ namespace ShortStuff.Repository.ValueInjecter
                 var sourceProp = sourceProps[i];
                 smartConventionInfo.SourceProp = sourceProp;
 
-                PropPair sourcePropPair;
+                bool propFound = _propertyDict.ContainsKey(sourceProp.Name);
 
-                if (_propertyDict.TryGetValue(sourceProp.Name, out sourcePropPair))
+                // If the source prop's name is not in the allowed list, and is neither a value type nor a string, we need to check whether we should recurse or not
+                if (!propFound && !sourceProp.PropertyType.IsValueType && sourceProp.PropertyType != typeof (string))
                 {
-                    if(sourcePropPair.Ignored) continue;
+                    // If source property is a Class ( and thus a navigational property ) and it was not found in the dictionary: Skip it
+                    if (sourceProp.PropertyType.IsClass) continue;
+                    if (sourceProp.PropertyType.IsGenericType && sourceProp.PropertyType.GetGenericArguments()[0].IsClass) continue;
                 }
 
                 for (var j = 0; j < targetProps.Count; j++)
@@ -171,10 +178,10 @@ namespace ShortStuff.Repository.ValueInjecter
             {
                 var sourceProp = sourceProps.GetByName(pair.Key);
                 var targetProp = targetProps.GetByName(pair.Value);
-                PropPair sourcePropPair;
-                bool propPairFound = _propertyDict.TryGetValue(pair.Key, out sourcePropPair);
+                int propDepth;
+                bool propFound = _propertyDict.TryGetValue(pair.Key, out propDepth);
 
-                if (propPairFound)
+                if (propFound)
                 {
                     ExecuteDeepMatch(new SmartMatchInfo
                     {
@@ -208,7 +215,6 @@ namespace ShortStuff.Repository.ValueInjecter
             var a = TypeAccessor.Create(component.GetType(), true);
             return a[component, prop.Name];
         }
-
         public struct PropPair
         {
             public bool Ignored;

@@ -25,9 +25,17 @@ namespace ShortStuff.Repository.ValueInjecter
             return prop.GetValue(component);
         }
 
+        /// <summary>
+        /// Determines if 2 properties match.
+        /// Match is determined by name and type.
+        /// The type check is lenient towards comparing base types to nullable types.
+        /// </summary>
         protected virtual bool Match(SmartConventionInfo c)
         {
-            return c.SourceProp.Name == c.TargetProp.Name && (c.SourceProp.PropertyType == c.TargetProp.PropertyType || Nullable.GetUnderlyingType(c.SourceProp.PropertyType) == c.TargetProp.PropertyType);
+            return c.SourceProp.Name == c.TargetProp.Name && 
+                (c.SourceProp.PropertyType == c.TargetProp.PropertyType || 
+                Nullable.GetUnderlyingType(c.SourceProp.PropertyType) == c.TargetProp.PropertyType ||
+                c.SourceProp.PropertyType == Nullable.GetUnderlyingType(c.TargetProp.PropertyType));
         }
 
         protected virtual void ExecuteMatch(SmartMatchInfo mi)

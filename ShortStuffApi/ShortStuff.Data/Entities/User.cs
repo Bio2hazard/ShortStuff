@@ -2,18 +2,18 @@
 
 namespace ShortStuff.Data.Entities
 {
-    public class User
+    public class User : IDataEntity<decimal>
     {
-        public User()
-        {
-            Messages = new List<Message>();
-            Echoes = new List<Echo>();
-            Followers = new List<User>();
-            Following = new List<User>();
-            Favorites = new List<Message>();
-            Notifications = new List<Notification>();
-            SubscribedTopics = new List<Topic>();
-        }
+        //public User()
+        //{
+        //    Messages = new List<Message>();
+        //    Echoes = new List<Echo>();
+        //    Followers = new List<User>();
+        //    Following = new List<User>();
+        //    Favorites = new List<Message>();
+        //    Notifications = new List<Notification>();
+        //    SubscribedTopics = new List<Topic>();
+        //}
 
         public decimal Id { get; set; }
         public string Name { get; set; }

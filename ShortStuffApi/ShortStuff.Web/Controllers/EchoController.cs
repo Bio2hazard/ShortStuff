@@ -64,7 +64,7 @@ namespace ShortStuff.Web.Controllers
 
             var status = UnitOfWork.EchoRepository.Create(data);
 
-            if (status.status == CreateStatusEnum.Conflict)
+            if (status.Status == CreateStatusEnum.Conflict)
                 return Conflict();
 
             return CreateHttpActionResult("Echo", status.Id);

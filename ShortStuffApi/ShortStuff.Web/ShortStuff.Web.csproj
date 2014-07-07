@@ -122,10 +122,15 @@
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Controllers\BaseController.cs" />
+    <Compile Include="Controllers\EchoAsyncController.cs" />
     <Compile Include="Controllers\EchoController.cs" />
+    <Compile Include="Controllers\MessageAsyncController.cs" />
     <Compile Include="Controllers\MessageController.cs" />
+    <Compile Include="Controllers\NotificationAsyncController.cs" />
+    <Compile Include="Controllers\TopicAsyncController.cs" />
     <Compile Include="Controllers\TopicController.cs" />
     <Compile Include="Controllers\NotificationController.cs" />
+    <Compile Include="Controllers\UserAsyncController.cs" />
     <Compile Include="Controllers\UserController.cs" />
     <Compile Include="Extensions\ApiControllerExtension.cs" />
     <Compile Include="Extensions\BadRequestBrokenRulesActionResult.cs" />

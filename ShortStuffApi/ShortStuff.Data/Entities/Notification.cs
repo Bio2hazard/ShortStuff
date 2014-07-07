@@ -2,7 +2,7 @@
 
 namespace ShortStuff.Data.Entities
 {
-    public class Notification
+    public class Notification : IDataEntity<int>
     {
         public int Id { get; set; }
         public virtual User Owner { get; set; }

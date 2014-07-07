@@ -1,13 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using FastMember;
-using Omu.ValueInjecter;
-
-namespace ShortStuff.Repository.ValueInjecter
+﻿namespace ShortStuff.Repository.ValueInjecter
 {
     public class NotNullInjection : SmartConventionInjection
     {

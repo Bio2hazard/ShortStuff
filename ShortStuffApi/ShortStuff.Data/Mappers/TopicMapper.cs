@@ -23,7 +23,7 @@ namespace ShortStuff.Data.Mappers
                 .IsRequired()
                 .IsUnicode()
                 .HasMaxLength(140)
-                .HasColumnAnnotation("Index", new IndexAnnotation(new IndexAttribute()
+                .HasColumnAnnotation("Index", new IndexAnnotation(new IndexAttribute
                 {
                     IsUnique = true
                 }));

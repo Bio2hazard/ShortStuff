@@ -3,12 +3,12 @@ using System.Collections.Generic;
 
 namespace ShortStuff.Data.Entities
 {
-    public class Message
+    public class Message : IDataEntity<int>
     {
-        public Message()
-        {
-            Replies = new List<Message>();
-        }
+        //public Message()
+        //{
+        //    Replies = new List<Message>();
+        //}
 
         public int Id { get; set; }
         public virtual User Creator { get; set; }

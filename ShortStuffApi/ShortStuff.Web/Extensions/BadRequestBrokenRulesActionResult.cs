@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -12,32 +11,32 @@ namespace ShortStuff.Web.Extensions
 {
     public class BadRequestBrokenRulesActionResult : IHttpActionResult
     {
-        private IEnumerable<ValidationRule> _brokenRules { get; set; }
-        private HttpRequestMessage _request { get; set; }
-        private string _className { get; set; }
+        private IEnumerable<ValidationRule> BrokenRules { get; set; }
+        private HttpRequestMessage Request { get; set; }
+        private string ClassName { get; set; }
 
         public BadRequestBrokenRulesActionResult(HttpRequestMessage request, IEnumerable<ValidationRule> brokenRules, string className)
         {
-            _request = request;
-            _brokenRules = brokenRules;
-            _className = className;
+            Request = request;
+            BrokenRules = brokenRules;
+            ClassName = className;
         }
 
         public Task<HttpResponseMessage> ExecuteAsync(CancellationToken cancellationToken)
         {
-            if (_brokenRules == null)
+            if (BrokenRules == null)
             {
                 return null;
             }
             var response = new HttpResponseMessage(HttpStatusCode.BadRequest);
-            var validationRules = _brokenRules as IList<ValidationRule> ?? _brokenRules.ToList();
+            var validationRules = BrokenRules as IList<ValidationRule> ?? BrokenRules.ToList();
             var errors = new
             {
-                Error = "The provided " + _className + " failed to validate.",
+                Error = "The provided " + ClassName + " failed to validate.",
                 ValidationErrors = validationRules.ToList()
             };
             response.Content = new StringContent(System.Web.Helpers.Json.Encode(errors));
-            response.RequestMessage = _request;
+            response.RequestMessage = Request;
             return Task.FromResult(response);
         }
     }

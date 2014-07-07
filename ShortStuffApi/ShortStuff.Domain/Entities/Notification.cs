@@ -75,6 +75,7 @@ namespace ShortStuff.Domain.Entities
 
         private void AddBrokenNotificationTypeRule<T>(NotificationType type, T requirement, decimal? requirementId)
         {
+            // ReSharper disable once CompareNonConstrainedGenericWithNull
             if (requirement == null && (requirementId == 0 || requirementId == null))
             {
                 AddBrokenRule(new ValidationRule("NotificationType" + type, "NotificationType_Required" + typeof(T).Name + "Null"));

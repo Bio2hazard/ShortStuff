@@ -1,8 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using ShortStuff.Domain.Entities;
-
-namespace ShortStuff.Domain.Services
+﻿namespace ShortStuff.Domain.Services
 {
     public class MessageService : IMessageService
     {
