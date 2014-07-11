@@ -1,4 +1,10 @@
-﻿using System;
+﻿// ShortStuff.Domain
+// Notification.cs
+// 
+// Licensed under GNU GPL v2.0
+// See License/GPLv2.txt for details
+
+using System;
 using ShortStuff.Domain.Enums;
 
 namespace ShortStuff.Domain.Entities
@@ -45,26 +51,26 @@ namespace ShortStuff.Domain.Entities
         {
             switch (type)
             {
-                // Make sure SourceUser requirement is met
+                    // Make sure SourceUser requirement is met
                 case NotificationType.NewFollower:
                 case NotificationType.LostFollower:
                     AddBrokenNotificationTypeRule(type, SourceUser, SourceUserId);
-                    break; 
+                    break;
 
-                // Make sure SourceUser + SourceMessage requirement is met
+                    // Make sure SourceUser + SourceMessage requirement is met
                 case NotificationType.FollowedNewMessage:
                 case NotificationType.NewMention:
                     AddBrokenNotificationTypeRule(type, SourceUser, SourceUserId);
                     AddBrokenNotificationTypeRule(type, SourceMessage, SourceMessageId);
                     break;
 
-                // Make sure SourceUser + SourceEcho requirement is met
+                    // Make sure SourceUser + SourceEcho requirement is met
                 case NotificationType.FollowedNewEcho:
                     AddBrokenNotificationTypeRule(type, SourceUser, SourceUserId);
                     AddBrokenNotificationTypeRule(type, SourceEcho, SourceEchoId);
                     break;
 
-                // Make sure SourceUser + SourceTopic + SourceMessage requirement is met
+                    // Make sure SourceUser + SourceTopic + SourceMessage requirement is met
                 case NotificationType.TopicNewMessage:
                     AddBrokenNotificationTypeRule(type, SourceUser, SourceUserId);
                     AddBrokenNotificationTypeRule(type, SourceMessage, SourceMessageId);
@@ -78,9 +84,8 @@ namespace ShortStuff.Domain.Entities
             // ReSharper disable once CompareNonConstrainedGenericWithNull
             if (requirement == null && (requirementId == 0 || requirementId == null))
             {
-                AddBrokenRule(new ValidationRule("NotificationType" + type, "NotificationType_Required" + typeof(T).Name + "Null"));
+                AddBrokenRule(new ValidationRule("NotificationType" + type, "NotificationType_Required" + typeof (T).Name + "Null"));
             }
         }
-
     }
 }

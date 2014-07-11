@@ -1,11 +1,15 @@
-﻿using System;
+﻿// ShortStuff.Web
+// NotificationAsyncController.cs
+// 
+// Licensed under GNU GPL v2.0
+// See License/GPLv2.txt for details
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using System.Web.Http;
-using System.Web.Http.Results;
-using ShortStuff.Domain;
 using ShortStuff.Domain.Entities;
 using ShortStuff.Domain.Enums;
 using ShortStuff.Domain.Services;
@@ -15,9 +19,9 @@ namespace ShortStuff.Web.Controllers
 {
     public class NotificationAsyncController : BaseController
     {
-        private INotificationService _notificationService;
+        private readonly INotificationService _notificationService;
 
-        public NotificationAsyncController(IUnitOfWork unitOfWork, INotificationService notificationService) : base(unitOfWork)
+        public NotificationAsyncController(INotificationService notificationService)
         {
             _notificationService = notificationService;
         }
@@ -26,7 +30,7 @@ namespace ShortStuff.Web.Controllers
         {
             try
             {
-                return GetHttpActionResult(await UnitOfWork.NotificationRepository.GetAllAsync());
+                return GetHttpActionResult(await _notificationService.GetAllAsync());
             }
             catch (Exception ex)
             {
@@ -42,7 +46,7 @@ namespace ShortStuff.Web.Controllers
         {
             try
             {
-                return GetHttpActionResult(await UnitOfWork.NotificationRepository.GetByIdAsync(id));
+                return GetHttpActionResult(await _notificationService.GetByIdAsync(id));
             }
             catch (Exception ex)
             {
@@ -60,13 +64,16 @@ namespace ShortStuff.Web.Controllers
             var validationRules = brokenRules as IList<ValidationRule> ?? brokenRules.ToList();
             if (validationRules.Any())
             {
-                return ApiControllerExtension.BadRequest(this, validationRules, data.GetType().Name);
+                return ApiControllerExtension.BadRequest(this, validationRules, data.GetType()
+                                                                                    .Name);
             }
 
-            var status = await UnitOfWork.NotificationRepository.CreateAsync(data);
+            var status = await _notificationService.CreateAsync(data);
 
             if (status.Status == CreateStatusEnum.Conflict)
+            {
                 return Conflict();
+            }
 
             return CreateHttpActionResult("NotificationAsync", status.Id);
         }
@@ -79,11 +86,12 @@ namespace ShortStuff.Web.Controllers
             var validationRules = brokenRules as IList<ValidationRule> ?? brokenRules.ToList();
             if (validationRules.Any())
             {
-                return ApiControllerExtension.BadRequest(this, validationRules, data.GetType().Name);
+                return ApiControllerExtension.BadRequest(this, validationRules, data.GetType()
+                                                                                    .Name);
             }
             data.Id = id;
 
-            var status = await UnitOfWork.NotificationRepository.UpdateAsync(data);
+            var status = await _notificationService.UpdateAsync(data);
 
             switch (status)
             {
@@ -95,7 +103,7 @@ namespace ShortStuff.Web.Controllers
 
         public async Task<IHttpActionResult> Delete(int id)
         {
-            await UnitOfWork.NotificationRepository.DeleteAsync(id);
+            await _notificationService.DeleteAsync(id);
             return StatusCode(HttpStatusCode.NoContent);
         }
     }

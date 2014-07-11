@@ -1,4 +1,10 @@
-﻿using System;
+﻿// ShortStuff.Domain
+// Echo.cs
+// 
+// Licensed under GNU GPL v2.0
+// See License/GPLv2.txt for details
+
+using System;
 
 namespace ShortStuff.Domain.Entities
 {
@@ -12,7 +18,7 @@ namespace ShortStuff.Domain.Entities
 
         protected override void Validate()
         {
-            if (Creator == null && ( CreatorId == 0 || CreatorId == null))
+            if (Creator == null && (CreatorId == 0 || CreatorId == null))
             {
                 AddBrokenRule(new ValidationRule("Creator_CreatorId", "Creator_Null_CreatorId_Null"));
             }

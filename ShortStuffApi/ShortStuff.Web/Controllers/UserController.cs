@@ -1,9 +1,14 @@
-﻿using System;
+﻿// ShortStuff.Web
+// UserController.cs
+// 
+// Licensed under GNU GPL v2.0
+// See License/GPLv2.txt for details
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Web.Http;
-using ShortStuff.Domain;
 using ShortStuff.Domain.Entities;
 using ShortStuff.Domain.Enums;
 using ShortStuff.Domain.Services;
@@ -13,10 +18,9 @@ namespace ShortStuff.Web.Controllers
 {
     public class UserController : BaseController
     {
-        private IUserService _userService;
-        
+        private readonly IUserService _userService;
 
-        public UserController(IUnitOfWork unitOfWork, IUserService userService) : base(unitOfWork)
+        public UserController(IUserService userService)
         {
             _userService = userService;
         }
@@ -25,7 +29,7 @@ namespace ShortStuff.Web.Controllers
         {
             try
             {
-                return GetHttpActionResult(UnitOfWork.UserRepository.GetAll());
+                return GetHttpActionResult(_userService.GetAll());
             }
             catch (Exception ex)
             {
@@ -41,7 +45,7 @@ namespace ShortStuff.Web.Controllers
         {
             try
             {
-                return GetHttpActionResult(UnitOfWork.UserRepository.GetById(id));
+                return GetHttpActionResult(_userService.GetById(id));
             }
             catch (Exception ex)
             {
@@ -59,13 +63,16 @@ namespace ShortStuff.Web.Controllers
             var validationRules = brokenRules as IList<ValidationRule> ?? brokenRules.ToList();
             if (validationRules.Any())
             {
-                return ApiControllerExtension.BadRequest(this, validationRules, data.GetType().Name);
+                return ApiControllerExtension.BadRequest(this, validationRules, data.GetType()
+                                                                                    .Name);
             }
 
-            var status = UnitOfWork.UserRepository.Create(data);
+            var status = _userService.Create(data);
 
             if (status.Status == CreateStatusEnum.Conflict)
+            {
                 return Conflict();
+            }
 
             return CreateHttpActionResult("User", status.Id);
         }
@@ -78,15 +85,16 @@ namespace ShortStuff.Web.Controllers
             var validationRules = brokenRules as IList<ValidationRule> ?? brokenRules.ToList();
             if (validationRules.Any())
             {
-                return ApiControllerExtension.BadRequest(this, validationRules, data.GetType().Name);
+                return ApiControllerExtension.BadRequest(this, validationRules, data.GetType()
+                                                                                    .Name);
             }
             data.Id = id;
 
-            var status = UnitOfWork.UserRepository.Update(data);
+            var status = _userService.Update(data);
 
             switch (status)
             {
-                    case UpdateStatus.NotFound:
+                case UpdateStatus.NotFound:
                     return Post(data);
             }
             return StatusCode(HttpStatusCode.NoContent);
@@ -94,8 +102,26 @@ namespace ShortStuff.Web.Controllers
 
         public IHttpActionResult Delete(decimal id)
         {
-            UnitOfWork.UserRepository.Delete(id);
+            _userService.Delete(id);
             return StatusCode(HttpStatusCode.NoContent);
+        }
+
+        [HttpGet]
+        [Route("api/user/bytag/{tag}")]
+        public IHttpActionResult GetUserByTag(string tag)
+        {
+            try
+            {
+                return GetHttpActionResult(_userService.GetByTag(tag));
+            }
+            catch (Exception ex)
+            {
+#if DEBUG
+                return InternalServerError(ex);
+#else
+                return InternalServerError();
+#endif
+            }
         }
     }
 }

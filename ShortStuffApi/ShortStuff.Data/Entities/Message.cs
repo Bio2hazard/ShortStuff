@@ -1,4 +1,10 @@
-﻿using System;
+﻿// ShortStuff.Data
+// Message.cs
+// 
+// Licensed under GNU GPL v2.0
+// See License/GPLv2.txt for details
+
+using System;
 using System.Collections.Generic;
 
 namespace ShortStuff.Data.Entities
@@ -10,7 +16,6 @@ namespace ShortStuff.Data.Entities
         //    Replies = new List<Message>();
         //}
 
-        public int Id { get; set; }
         public virtual User Creator { get; set; }
         public decimal CreatorId { get; set; }
         public DateTime CreationDate { get; set; }
@@ -18,5 +23,6 @@ namespace ShortStuff.Data.Entities
         public virtual Message ParentMessage { get; set; }
         public int? ParentMessageId { get; set; }
         public virtual ICollection<Message> Replies { get; set; }
+        public int Id { get; set; }
     }
 }

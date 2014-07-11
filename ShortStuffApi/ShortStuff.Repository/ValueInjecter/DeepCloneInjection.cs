@@ -1,4 +1,10 @@
-﻿using System;
+﻿// ShortStuff.Repository
+// DeepCloneInjection.cs
+// 
+// Licensed under GNU GPL v2.0
+// See License/GPLv2.txt for details
+
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,10 +22,13 @@ namespace ShortStuff.Repository.ValueInjecter
         protected override void ExecuteMatch(SmartMatchInfo mi)
         {
             var sourceVal = GetValue(mi.SourceProp, mi.Source);
-            if (sourceVal == null) return;
+            if (sourceVal == null)
+            {
+                return;
+            }
 
             //for value types and string just return the value as is
-            if (mi.SourceProp.PropertyType.IsValueType || mi.SourceProp.PropertyType == typeof(string))
+            if (mi.SourceProp.PropertyType.IsValueType || mi.SourceProp.PropertyType == typeof (string))
             {
                 SetValue(mi.TargetProp, mi.Target, sourceVal);
                 return;
@@ -35,9 +44,14 @@ namespace ShortStuff.Repository.ValueInjecter
                 for (var index = 0; index < arr.Length; index++)
                 {
                     var arriVal = arr.GetValue(index);
-                    if (arriVal.GetType().IsValueType || arriVal is string) continue;
+                    if (arriVal.GetType()
+                               .IsValueType || arriVal is string)
+                    {
+                        continue;
+                    }
 // ReSharper disable once PossibleNullReferenceException
-                    arrayClone.SetValue(Activator.CreateInstance(arriVal.GetType()).InjectFrom<DeepCloneInjection>(arriVal), index);
+                    arrayClone.SetValue(Activator.CreateInstance(arriVal.GetType())
+                                                 .InjectFrom<DeepCloneInjection>(arriVal), index);
                 }
                 SetValue(mi.TargetProp, mi.Target, arrayClone);
                 return;
@@ -46,18 +60,23 @@ namespace ShortStuff.Repository.ValueInjecter
             if (mi.SourceProp.PropertyType.IsGenericType)
             {
                 //handle IEnumerable<> also ICollection<> IList<> List<>
-                if (mi.SourceProp.PropertyType.GetGenericTypeDefinition().GetInterfaces().Contains(typeof(IEnumerable)))
+                if (mi.SourceProp.PropertyType.GetGenericTypeDefinition()
+                      .GetInterfaces()
+                      .Contains(typeof (IEnumerable)))
                 {
                     var genericArgument = mi.TargetProp.PropertyType.GetGenericArguments()[0];
 
-                    var tlist = typeof(List<>).MakeGenericType(genericArgument);
+                    var tlist = typeof (List<>).MakeGenericType(genericArgument);
 
                     var list = Activator.CreateInstance(tlist);
 
-                    if (genericArgument.IsValueType || genericArgument == typeof(string))
+                    if (genericArgument.IsValueType || genericArgument == typeof (string))
                     {
                         var addRange = tlist.GetMethod("AddRange");
-                        addRange.Invoke(list, new[] { sourceVal });
+                        addRange.Invoke(list, new[]
+                        {
+                            sourceVal
+                        });
                     }
                     else
                     {
@@ -65,7 +84,11 @@ namespace ShortStuff.Repository.ValueInjecter
 // ReSharper disable once PossibleNullReferenceException
                         foreach (var o in sourceVal as IEnumerable)
                         {
-                            addMethod.Invoke(list, new[] { Activator.CreateInstance(genericArgument).InjectFrom<DeepCloneInjection>(o) });
+                            addMethod.Invoke(list, new[]
+                            {
+                                Activator.CreateInstance(genericArgument)
+                                         .InjectFrom<DeepCloneInjection>(o)
+                            });
                         }
                     }
                     SetValue(mi.TargetProp, mi.Target, list);
@@ -76,7 +99,8 @@ namespace ShortStuff.Repository.ValueInjecter
             }
 
             //for simple object types create a new instace and apply the clone injection on it
-            SetValue(mi.TargetProp, mi.Target, Activator.CreateInstance(mi.TargetProp.PropertyType).InjectFrom<DeepCloneInjection>(sourceVal));
+            SetValue(mi.TargetProp, mi.Target, Activator.CreateInstance(mi.TargetProp.PropertyType)
+                                                        .InjectFrom<DeepCloneInjection>(sourceVal));
         }
     }
 }

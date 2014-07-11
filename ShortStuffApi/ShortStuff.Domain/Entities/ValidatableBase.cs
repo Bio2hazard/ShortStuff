@@ -1,4 +1,10 @@
-﻿using System.Collections.Generic;
+﻿// ShortStuff.Domain
+// ValidatableBase.cs
+// 
+// Licensed under GNU GPL v2.0
+// See License/GPLv2.txt for details
+
+using System.Collections.Generic;
 
 namespace ShortStuff.Domain.Entities
 {
@@ -6,16 +12,16 @@ namespace ShortStuff.Domain.Entities
     {
         private List<ValidationRule> _brokenRules = new List<ValidationRule>();
 
-        protected void AddBrokenRule(ValidationRule brokenRule)
-        {
-            _brokenRules.Add(brokenRule);
-        }
-
         public IEnumerable<ValidationRule> GetBrokenRules()
         {
             _brokenRules.Clear();
             Validate();
             return _brokenRules;
+        }
+
+        protected void AddBrokenRule(ValidationRule brokenRule)
+        {
+            _brokenRules.Add(brokenRule);
         }
 
         public IEnumerable<ValidationRule> GetUpdateBrokenRules()

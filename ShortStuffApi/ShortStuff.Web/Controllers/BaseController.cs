@@ -1,18 +1,16 @@
-﻿using System.Web.Http;
+﻿// ShortStuff.Web
+// BaseController.cs
+// 
+// Licensed under GNU GPL v2.0
+// See License/GPLv2.txt for details
+
+using System.Web.Http;
 using System.Web.Http.Routing;
-using ShortStuff.Domain;
 
 namespace ShortStuff.Web.Controllers
 {
     public class BaseController : ApiController
     {
-        private readonly IUnitOfWork _unitOfWork;
-
-        public BaseController(IUnitOfWork unitOfWork)
-        {
-            _unitOfWork = unitOfWork;
-        }
-
         protected IHttpActionResult GetHttpActionResult<TEntity>(TEntity entity)
         {
             if (!Equals(entity, default(TEntity)))
@@ -33,14 +31,13 @@ namespace ShortStuff.Web.Controllers
                     id = entity
                 });
 
-                return Created(link, new { id = entity, url = link});
+                return Created(link, new
+                {
+                    id = entity,
+                    url = link
+                });
             }
             return BadRequest();
-        }
-
-        protected IUnitOfWork UnitOfWork
-        {
-            get { return _unitOfWork; }
         }
     }
 }

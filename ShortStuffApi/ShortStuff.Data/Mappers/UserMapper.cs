@@ -1,11 +1,17 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿// ShortStuff.Data
+// UserMapper.cs
+// 
+// Licensed under GNU GPL v2.0
+// See License/GPLv2.txt for details
+
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.Infrastructure.Annotations;
 using System.Data.Entity.ModelConfiguration;
 using ShortStuff.Data.Entities;
 
 namespace ShortStuff.Data.Mappers
 {
-    class UserMapper : EntityTypeConfiguration<User>
+    internal class UserMapper : EntityTypeConfiguration<User>
     {
         public UserMapper()
         {
@@ -15,7 +21,7 @@ namespace ShortStuff.Data.Mappers
             // Primary Key
             HasKey(u => u.Id);
             Property(u => u.Id)
-                .HasPrecision(21,0)
+                .HasPrecision(21, 0)
                 .HasColumnType("Numeric")
                 .IsRequired();
 
@@ -33,7 +39,10 @@ namespace ShortStuff.Data.Mappers
                 .IsRequired()
                 .IsUnicode(false)
                 .HasMaxLength(140)
-                .HasColumnAnnotation("Index", new IndexAnnotation(new IndexAttribute("IX_Tag"){IsUnique = true}));
+                .HasColumnAnnotation("Index", new IndexAnnotation(new IndexAttribute("IX_Tag")
+                {
+                    IsUnique = true
+                }));
 
             Property(u => u.Picture)
                 .IsOptional();

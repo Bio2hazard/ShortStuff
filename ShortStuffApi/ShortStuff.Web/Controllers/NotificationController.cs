@@ -1,9 +1,14 @@
-﻿using System;
+﻿// ShortStuff.Web
+// NotificationController.cs
+// 
+// Licensed under GNU GPL v2.0
+// See License/GPLv2.txt for details
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Web.Http;
-using ShortStuff.Domain;
 using ShortStuff.Domain.Entities;
 using ShortStuff.Domain.Enums;
 using ShortStuff.Domain.Services;
@@ -13,9 +18,9 @@ namespace ShortStuff.Web.Controllers
 {
     public class NotificationController : BaseController
     {
-        private INotificationService _notificationService;
+        private readonly INotificationService _notificationService;
 
-        public NotificationController(IUnitOfWork unitOfWork, INotificationService notificationService) : base(unitOfWork)
+        public NotificationController(INotificationService notificationService)
         {
             _notificationService = notificationService;
         }
@@ -24,7 +29,7 @@ namespace ShortStuff.Web.Controllers
         {
             try
             {
-                return GetHttpActionResult(UnitOfWork.NotificationRepository.GetAll());
+                return GetHttpActionResult(_notificationService.GetAll());
             }
             catch (Exception ex)
             {
@@ -40,7 +45,7 @@ namespace ShortStuff.Web.Controllers
         {
             try
             {
-                return GetHttpActionResult(UnitOfWork.NotificationRepository.GetById(id));
+                return GetHttpActionResult(_notificationService.GetById(id));
             }
             catch (Exception ex)
             {
@@ -58,13 +63,16 @@ namespace ShortStuff.Web.Controllers
             var validationRules = brokenRules as IList<ValidationRule> ?? brokenRules.ToList();
             if (validationRules.Any())
             {
-                return ApiControllerExtension.BadRequest(this, validationRules, data.GetType().Name);
+                return ApiControllerExtension.BadRequest(this, validationRules, data.GetType()
+                                                                                    .Name);
             }
 
-            var status = UnitOfWork.NotificationRepository.Create(data);
+            var status = _notificationService.Create(data);
 
             if (status.Status == CreateStatusEnum.Conflict)
+            {
                 return Conflict();
+            }
 
             return CreateHttpActionResult("Notification", status.Id);
         }
@@ -77,11 +85,12 @@ namespace ShortStuff.Web.Controllers
             var validationRules = brokenRules as IList<ValidationRule> ?? brokenRules.ToList();
             if (validationRules.Any())
             {
-                return ApiControllerExtension.BadRequest(this, validationRules, data.GetType().Name);
+                return ApiControllerExtension.BadRequest(this, validationRules, data.GetType()
+                                                                                    .Name);
             }
             data.Id = id;
 
-            var status = UnitOfWork.NotificationRepository.Update(data);
+            var status = _notificationService.Update(data);
 
             switch (status)
             {
@@ -93,7 +102,7 @@ namespace ShortStuff.Web.Controllers
 
         public IHttpActionResult Delete(int id)
         {
-            UnitOfWork.NotificationRepository.Delete(id);
+            _notificationService.Delete(id);
             return StatusCode(HttpStatusCode.NoContent);
         }
     }

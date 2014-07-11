@@ -1,9 +1,14 @@
-﻿using System;
+﻿// ShortStuff.Web
+// TopicController.cs
+// 
+// Licensed under GNU GPL v2.0
+// See License/GPLv2.txt for details
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Web.Http;
-using ShortStuff.Domain;
 using ShortStuff.Domain.Entities;
 using ShortStuff.Domain.Enums;
 using ShortStuff.Domain.Services;
@@ -13,9 +18,9 @@ namespace ShortStuff.Web.Controllers
 {
     public class TopicController : BaseController
     {
-        private ITopicService _topicService;
+        private readonly ITopicService _topicService;
 
-        public TopicController(IUnitOfWork unitOfWork, ITopicService topicService) : base(unitOfWork)
+        public TopicController(ITopicService topicService)
         {
             _topicService = topicService;
         }
@@ -24,7 +29,7 @@ namespace ShortStuff.Web.Controllers
         {
             try
             {
-                return GetHttpActionResult(UnitOfWork.TopicRepository.GetAll());
+                return GetHttpActionResult(_topicService.GetAll());
             }
             catch (Exception ex)
             {
@@ -40,7 +45,7 @@ namespace ShortStuff.Web.Controllers
         {
             try
             {
-                return GetHttpActionResult(UnitOfWork.TopicRepository.GetById(id));
+                return GetHttpActionResult(_topicService.GetById(id));
             }
             catch (Exception ex)
             {
@@ -58,13 +63,16 @@ namespace ShortStuff.Web.Controllers
             var validationRules = brokenRules as IList<ValidationRule> ?? brokenRules.ToList();
             if (validationRules.Any())
             {
-                return ApiControllerExtension.BadRequest(this, validationRules, data.GetType().Name);
+                return ApiControllerExtension.BadRequest(this, validationRules, data.GetType()
+                                                                                    .Name);
             }
 
-            var status = UnitOfWork.TopicRepository.Create(data);
+            var status = _topicService.Create(data);
 
             if (status.Status == CreateStatusEnum.Conflict)
+            {
                 return Conflict();
+            }
 
             return CreateHttpActionResult("Topic", status.Id);
         }
@@ -77,11 +85,12 @@ namespace ShortStuff.Web.Controllers
             var validationRules = brokenRules as IList<ValidationRule> ?? brokenRules.ToList();
             if (validationRules.Any())
             {
-                return ApiControllerExtension.BadRequest(this, validationRules, data.GetType().Name);
+                return ApiControllerExtension.BadRequest(this, validationRules, data.GetType()
+                                                                                    .Name);
             }
             data.Id = id;
 
-            var status = UnitOfWork.TopicRepository.Update(data);
+            var status = _topicService.Update(data);
 
             switch (status)
             {
@@ -93,7 +102,7 @@ namespace ShortStuff.Web.Controllers
 
         public IHttpActionResult Delete(int id)
         {
-            UnitOfWork.TopicRepository.Delete(id);
+            _topicService.Delete(id);
             return StatusCode(HttpStatusCode.NoContent);
         }
     }

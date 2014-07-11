@@ -1,10 +1,15 @@
-﻿using System;
+﻿// ShortStuff.Web
+// TopicAsyncController.cs
+// 
+// Licensed under GNU GPL v2.0
+// See License/GPLv2.txt for details
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using System.Web.Http;
-using ShortStuff.Domain;
 using ShortStuff.Domain.Entities;
 using ShortStuff.Domain.Enums;
 using ShortStuff.Domain.Services;
@@ -14,9 +19,9 @@ namespace ShortStuff.Web.Controllers
 {
     public class TopicAsyncController : BaseController
     {
-        private ITopicService _topicService;
+        private readonly ITopicService _topicService;
 
-        public TopicAsyncController(IUnitOfWork unitOfWork, ITopicService topicService) : base(unitOfWork)
+        public TopicAsyncController(ITopicService topicService)
         {
             _topicService = topicService;
         }
@@ -25,7 +30,7 @@ namespace ShortStuff.Web.Controllers
         {
             try
             {
-                return GetHttpActionResult(await UnitOfWork.TopicRepository.GetAllAsync());
+                return GetHttpActionResult(await _topicService.GetAllAsync());
             }
             catch (Exception ex)
             {
@@ -41,7 +46,7 @@ namespace ShortStuff.Web.Controllers
         {
             try
             {
-                return GetHttpActionResult(await UnitOfWork.TopicRepository.GetByIdAsync(id));
+                return GetHttpActionResult(await _topicService.GetByIdAsync(id));
             }
             catch (Exception ex)
             {
@@ -59,13 +64,16 @@ namespace ShortStuff.Web.Controllers
             var validationRules = brokenRules as IList<ValidationRule> ?? brokenRules.ToList();
             if (validationRules.Any())
             {
-                return ApiControllerExtension.BadRequest(this, validationRules, data.GetType().Name);
+                return ApiControllerExtension.BadRequest(this, validationRules, data.GetType()
+                                                                                    .Name);
             }
 
-            var status = await UnitOfWork.TopicRepository.CreateAsync(data);
+            var status = await _topicService.CreateAsync(data);
 
             if (status.Status == CreateStatusEnum.Conflict)
+            {
                 return Conflict();
+            }
 
             return CreateHttpActionResult("TopicAsync", status.Id);
         }
@@ -78,11 +86,12 @@ namespace ShortStuff.Web.Controllers
             var validationRules = brokenRules as IList<ValidationRule> ?? brokenRules.ToList();
             if (validationRules.Any())
             {
-                return ApiControllerExtension.BadRequest(this, validationRules, data.GetType().Name);
+                return ApiControllerExtension.BadRequest(this, validationRules, data.GetType()
+                                                                                    .Name);
             }
             data.Id = id;
 
-            var status = await UnitOfWork.TopicRepository.UpdateAsync(data);
+            var status = await _topicService.UpdateAsync(data);
 
             switch (status)
             {
@@ -94,7 +103,7 @@ namespace ShortStuff.Web.Controllers
 
         public async Task<IHttpActionResult> Delete(int id)
         {
-            await UnitOfWork.TopicRepository.DeleteAsync(id);
+            await _topicService.DeleteAsync(id);
             return StatusCode(HttpStatusCode.NoContent);
         }
     }

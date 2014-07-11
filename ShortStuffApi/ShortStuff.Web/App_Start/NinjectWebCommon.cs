@@ -1,3 +1,9 @@
+// ShortStuff.Web
+// NinjectWebCommon.cs
+// 
+// Licensed under GNU GPL v2.0
+// See License/GPLv2.txt for details
+
 using System;
 using System.Web;
 using Microsoft.Web.Infrastructure.DynamicModuleHelper;
@@ -8,36 +14,37 @@ using ShortStuff.Domain.Entities;
 using ShortStuff.Domain.Services;
 using ShortStuff.Repository;
 using ShortStuff.Web;
+using WebActivatorEx;
 
-[assembly: WebActivatorEx.PreApplicationStartMethod(typeof(NinjectWebCommon), "Start")]
-[assembly: WebActivatorEx.ApplicationShutdownMethodAttribute(typeof(NinjectWebCommon), "Stop")]
+[assembly: WebActivatorEx.PreApplicationStartMethod(typeof (NinjectWebCommon), "Start")]
+[assembly: ApplicationShutdownMethod(typeof (NinjectWebCommon), "Stop")]
 
 namespace ShortStuff.Web
 {
-    public static class NinjectWebCommon 
+    public static class NinjectWebCommon
     {
         private static readonly Bootstrapper Bootstrapper = new Bootstrapper();
 
         /// <summary>
-        /// Starts the application
+        ///     Starts the application
         /// </summary>
-        public static void Start() 
+        public static void Start()
         {
-            DynamicModuleUtility.RegisterModule(typeof(OnePerRequestHttpModule));
-            DynamicModuleUtility.RegisterModule(typeof(NinjectHttpModule));
+            DynamicModuleUtility.RegisterModule(typeof (OnePerRequestHttpModule));
+            DynamicModuleUtility.RegisterModule(typeof (NinjectHttpModule));
             Bootstrapper.Initialize(CreateKernel);
         }
-        
+
         /// <summary>
-        /// Stops the application.
+        ///     Stops the application.
         /// </summary>
         public static void Stop()
         {
             Bootstrapper.ShutDown();
         }
-        
+
         /// <summary>
-        /// Creates the kernel that will manage your application.
+        ///     Creates the kernel that will manage your application.
         /// </summary>
         /// <returns>The created kernel.</returns>
         private static IKernel CreateKernel()
@@ -45,8 +52,10 @@ namespace ShortStuff.Web
             var kernel = new StandardKernel();
             try
             {
-                kernel.Bind<Func<IKernel>>().ToMethod(ctx => () => new Bootstrapper().Kernel);
-                kernel.Bind<IHttpModule>().To<HttpApplicationInitializationHttpModule>();
+                kernel.Bind<Func<IKernel>>()
+                      .ToMethod(ctx => () => new Bootstrapper().Kernel);
+                kernel.Bind<IHttpModule>()
+                      .To<HttpApplicationInitializationHttpModule>();
 
                 RegisterServices(kernel);
                 return kernel;
@@ -59,7 +68,7 @@ namespace ShortStuff.Web
         }
 
         /// <summary>
-        /// Load your modules or register your services here!
+        ///     Load your modules or register your services here!
         /// </summary>
         /// <param name="kernel">The kernel.</param>
         private static void RegisterServices(IKernel kernel)
@@ -107,6 +116,6 @@ namespace ShortStuff.Web
             kernel.Bind<IRepository<Topic, int>>()
                   .To<TopicRepository>()
                   .InRequestScope();
-        }        
+        }
     }
 }

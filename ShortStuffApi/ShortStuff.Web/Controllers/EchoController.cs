@@ -1,9 +1,14 @@
-﻿using System;
+﻿// ShortStuff.Web
+// EchoController.cs
+// 
+// Licensed under GNU GPL v2.0
+// See License/GPLv2.txt for details
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Web.Http;
-using ShortStuff.Domain;
 using ShortStuff.Domain.Entities;
 using ShortStuff.Domain.Enums;
 using ShortStuff.Domain.Services;
@@ -13,10 +18,9 @@ namespace ShortStuff.Web.Controllers
 {
     public class EchoController : BaseController
     {
-        private IEchoService _echoService;
-        
+        private readonly IEchoService _echoService;
 
-        public EchoController(IUnitOfWork unitOfWork, IEchoService echoService) : base(unitOfWork)
+        public EchoController(IEchoService echoService)
         {
             _echoService = echoService;
         }
@@ -25,7 +29,7 @@ namespace ShortStuff.Web.Controllers
         {
             try
             {
-                return GetHttpActionResult(UnitOfWork.EchoRepository.GetAll());
+                return GetHttpActionResult(_echoService.GetAll());
             }
             catch (Exception ex)
             {
@@ -36,12 +40,12 @@ namespace ShortStuff.Web.Controllers
 #endif
             }
         }
-        
+
         public IHttpActionResult Get(int id)
         {
             try
             {
-                return GetHttpActionResult(UnitOfWork.EchoRepository.GetById(id));
+                return GetHttpActionResult(_echoService.GetById(id));
             }
             catch (Exception ex)
             {
@@ -59,13 +63,16 @@ namespace ShortStuff.Web.Controllers
             var validationRules = brokenRules as IList<ValidationRule> ?? brokenRules.ToList();
             if (validationRules.Any())
             {
-                return ApiControllerExtension.BadRequest(this, validationRules, data.GetType().Name);
+                return ApiControllerExtension.BadRequest(this, validationRules, data.GetType()
+                                                                                    .Name);
             }
 
-            var status = UnitOfWork.EchoRepository.Create(data);
+            var status = _echoService.Create(data);
 
             if (status.Status == CreateStatusEnum.Conflict)
+            {
                 return Conflict();
+            }
 
             return CreateHttpActionResult("Echo", status.Id);
         }
@@ -78,15 +85,16 @@ namespace ShortStuff.Web.Controllers
             var validationRules = brokenRules as IList<ValidationRule> ?? brokenRules.ToList();
             if (validationRules.Any())
             {
-                return ApiControllerExtension.BadRequest(this, validationRules, data.GetType().Name);
+                return ApiControllerExtension.BadRequest(this, validationRules, data.GetType()
+                                                                                    .Name);
             }
             data.Id = id;
 
-            var status = UnitOfWork.EchoRepository.Update(data);
+            var status = _echoService.Update(data);
 
             switch (status)
             {
-                    case UpdateStatus.NotFound:
+                case UpdateStatus.NotFound:
                     return Post(data);
             }
             return StatusCode(HttpStatusCode.NoContent);
@@ -94,7 +102,7 @@ namespace ShortStuff.Web.Controllers
 
         public IHttpActionResult Delete(int id)
         {
-            UnitOfWork.EchoRepository.Delete(id);
+            _echoService.Delete(id);
             return StatusCode(HttpStatusCode.NoContent);
         }
     }

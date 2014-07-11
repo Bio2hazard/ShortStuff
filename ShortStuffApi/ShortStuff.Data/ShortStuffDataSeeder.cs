@@ -1,13 +1,162 @@
-﻿using System;
+﻿// ShortStuff.Data
+// ShortStuffDataSeeder.cs
+// 
+// Licensed under GNU GPL v2.0
+// See License/GPLv2.txt for details
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using ShortStuff.Data.Entities;
 
 namespace ShortStuff.Data
 {
-    class ShortStuffDataSeeder
+    internal class ShortStuffDataSeeder
     {
-        readonly ShortStuffContext _context;
+        private static readonly IList<UserSeed> UserSeedData = new List<UserSeed>
+        {
+            new UserSeed
+            {
+                UserGoogleId = 1,
+                Name = "John Doe",
+                Email = "johndoe@gmail.com",
+                Tag = "johndoe",
+                Picture = "picturejohn"
+            },
+            new UserSeed
+            {
+                UserGoogleId = 2,
+                Name = "Jane Doe",
+                Email = "janedoe@gmail.com",
+                Tag = "janedoe",
+                Picture = "picturejane"
+            },
+            new UserSeed
+            {
+                UserGoogleId = 3,
+                Name = "Messer Schmidt",
+                Email = "messer@gmail.com",
+                Tag = "messer",
+                Picture = "picturemesser"
+            },
+            new UserSeed
+            {
+                UserGoogleId = 4,
+                Name = "Hans Stur",
+                Email = "hans@gmail.com",
+                Tag = "hansmans",
+                Picture = "picturehans"
+            },
+        };
+
+        private static readonly string[] TopicSeedData =
+        {
+            "#dummiesunite"
+        };
+
+        private static readonly IList<MessageSeed> MessageSeedData = new List<MessageSeed>
+        {
+            new MessageSeed
+            {
+                UserGoogleId = 1,
+                MessageBody = "My first ShortMessage"
+            },
+            new MessageSeed
+            {
+                UserGoogleId = 1,
+                MessageBody = "@janedoe are you getting this?"
+            },
+            new MessageSeed
+            {
+                UserGoogleId = 2,
+                MessageBody = "@johndoe reading you loud and clear",
+                ParentMessageId = 2
+            },
+            new MessageSeed
+            {
+                UserGoogleId = 3,
+                MessageBody = "Testing 123"
+            },
+            new MessageSeed
+            {
+                UserGoogleId = 3,
+                MessageBody = "#dummiesunite How are all ya fellow dummies doin?",
+                TopicId = 1
+            },
+            new MessageSeed
+            {
+                UserGoogleId = 4,
+                MessageBody = "#dummiesunite Wonderful!",
+                TopicId = 1
+            }
+        };
+
+        private static readonly IList<FollowerSeed> FollowerSeedData = new List<FollowerSeed>
+        {
+            new FollowerSeed
+            {
+                SourceUserGoogleId = 2,
+                UserGoogleIdToFollow = 1
+            },
+            new FollowerSeed
+            {
+                SourceUserGoogleId = 1,
+                UserGoogleIdToFollow = 2
+            }
+        };
+
+        private static readonly IList<FavoriteSeed> FavoriteSeedData = new List<FavoriteSeed>
+        {
+            new FavoriteSeed
+            {
+                MessageId = 1,
+                SourceUserGoogleId = 2
+            },
+            new FavoriteSeed
+            {
+                MessageId = 4,
+                SourceUserGoogleId = 1
+            }
+        };
+
+        private static readonly IList<EchoSeed> EchoSeedData = new List<EchoSeed>
+        {
+            new EchoSeed
+            {
+                SourceUserGoogleId = 4,
+                MessageIdToEcho = 1
+            }
+        };
+
+        private static readonly IList<NotificationSeed> NotificationSeedData = new List<NotificationSeed>
+        {
+            new NotificationSeed
+            {
+                OwnerGoogleId = 1,
+                NotificationType = NotificationType.NewFollower,
+                SourceUserId = 2,
+                NotificationStatus = NotificationStatus.Unread
+            },
+            new NotificationSeed
+            {
+                OwnerGoogleId = 2,
+                NotificationType = NotificationType.FollowedNewMessage,
+                SourceUserId = 2,
+                SourceMessageId = 2,
+                NotificationStatus = NotificationStatus.Unread
+            },
+            new NotificationSeed
+            {
+                OwnerGoogleId = 4,
+                NotificationType = NotificationType.TopicNewMessage,
+                SourceUserId = 3,
+                SourceTopicId = 1,
+                SourceMessageId = 5,
+                NotificationStatus = NotificationStatus.Unread
+            }
+        };
+
+        private readonly ShortStuffContext _context;
 
         public ShortStuffDataSeeder(ShortStuffContext context)
         {
@@ -38,11 +187,12 @@ namespace ShortStuff.Data
                 foreach (var followerSeed in FollowerSeedData)
                 {
                     var sourceUser = _context.Users.Single(u => u.Id == followerSeed.SourceUserGoogleId);
-                    _context.Users.Single(u => u.Id == followerSeed.UserGoogleIdToFollow).Followers.Add(sourceUser);
+                    _context.Users.Single(u => u.Id == followerSeed.UserGoogleIdToFollow)
+                            .Followers.Add(sourceUser);
                     _context.SaveChanges();
                 }
             }
-                
+
             // Create dummy topics
             if (!_context.Topics.Any())
             {
@@ -57,7 +207,7 @@ namespace ShortStuff.Data
                     _context.SaveChanges();
                 }
             }
-                
+
 
             // Create dummy messages
             if (!_context.Messages.Any())
@@ -89,13 +239,14 @@ namespace ShortStuff.Data
                     }
                     _context.SaveChanges();
                 }
-                    
+
 
                 // Create dummy favorite data
                 foreach (var favoriteSeed in FavoriteSeedData)
                 {
                     var message = _context.Messages.Single(m => m.Id == favoriteSeed.MessageId);
-                    _context.Users.Single(u => u.Id == favoriteSeed.SourceUserGoogleId).Favorites.Add(message);
+                    _context.Users.Single(u => u.Id == favoriteSeed.SourceUserGoogleId)
+                            .Favorites.Add(message);
                     _context.SaveChanges();
                 }
             }
@@ -117,7 +268,6 @@ namespace ShortStuff.Data
                     _context.Echoes.Add(echo);
                     _context.SaveChanges();
                 }
-                    
             }
 
             // Create dummy notification data
@@ -145,78 +295,38 @@ namespace ShortStuff.Data
                     {
                         Owner = ownerUser,
                         CreationDate = DateTime.UtcNow,
-                        NotificationType = (int)notificationSeed.NotificationType,
+                        NotificationType = (int) notificationSeed.NotificationType,
                         SourceMessage = message,
                         SourceUser = user,
                         SourceTopic = topic,
-                        NotificationStatus = (int)notificationSeed.NotificationStatus
+                        NotificationStatus = (int) notificationSeed.NotificationStatus
                     };
 
                     _context.Notifications.Add(notification);
                     _context.SaveChanges();
                 }
-                    
             }
         }
 
-        private static readonly IList<UserSeed> UserSeedData = new List<UserSeed>
+        private class EchoSeed
         {
-            new UserSeed {UserGoogleId = 1, Name = "John Doe", Email = "johndoe@gmail.com", Tag = "johndoe", Picture = "picturejohn"},
-            new UserSeed {UserGoogleId = 2, Name = "Jane Doe", Email = "janedoe@gmail.com", Tag = "janedoe", Picture = "picturejane"},
-            new UserSeed {UserGoogleId = 3, Name = "Messer Schmidt", Email = "messer@gmail.com", Tag = "messer", Picture = "picturemesser"},
-            new UserSeed {UserGoogleId = 4, Name = "Hans Stur", Email = "hans@gmail.com", Tag = "hansmans", Picture = "picturehans"},
-        }; 
-
-        private static readonly string[] TopicSeedData =
-        {
-            "#dummiesunite"
-        };
-
-        private static readonly IList<MessageSeed> MessageSeedData = new List<MessageSeed>
-        {
-            new MessageSeed {UserGoogleId = 1, MessageBody = "My first ShortMessage"},
-            new MessageSeed {UserGoogleId = 1, MessageBody = "@janedoe are you getting this?"},
-            new MessageSeed {UserGoogleId = 2, MessageBody = "@johndoe reading you loud and clear", ParentMessageId = 2},
-            new MessageSeed {UserGoogleId = 3, MessageBody = "Testing 123"},
-            new MessageSeed {UserGoogleId = 3, MessageBody = "#dummiesunite How are all ya fellow dummies doin?", TopicId = 1},
-            new MessageSeed {UserGoogleId = 4, MessageBody = "#dummiesunite Wonderful!", TopicId = 1}
-
-        };
-
-        private static readonly IList<FollowerSeed> FollowerSeedData = new List<FollowerSeed>
-        {
-            new FollowerSeed {SourceUserGoogleId = 2, UserGoogleIdToFollow = 1},
-            new FollowerSeed {SourceUserGoogleId = 1, UserGoogleIdToFollow = 2}
-        };
-
-        private static readonly IList<FavoriteSeed> FavoriteSeedData = new List<FavoriteSeed>
-        {
-            new FavoriteSeed {MessageId = 1, SourceUserGoogleId = 2},
-            new FavoriteSeed {MessageId = 4, SourceUserGoogleId = 1}
-        };
-
-        private static readonly IList<EchoSeed> EchoSeedData = new List<EchoSeed>
-        {
-            new EchoSeed {SourceUserGoogleId = 4, MessageIdToEcho = 1}
-        }; 
-
-        private static readonly IList<NotificationSeed> NotificationSeedData = new List<NotificationSeed>
-        {
-            new NotificationSeed {OwnerGoogleId = 1, NotificationType = NotificationType.NewFollower, SourceUserId = 2, NotificationStatus = NotificationStatus.Unread},
-            new NotificationSeed {OwnerGoogleId = 2, NotificationType = NotificationType.FollowedNewMessage, SourceUserId = 2,SourceMessageId = 2, NotificationStatus = NotificationStatus.Unread},
-            new NotificationSeed {OwnerGoogleId = 4, NotificationType = NotificationType.TopicNewMessage, SourceUserId = 3,SourceTopicId = 1, SourceMessageId = 5, NotificationStatus = NotificationStatus.Unread}
-        }; 
-
-        class UserSeed
-        {
-            public decimal UserGoogleId { get; set; }
-            public string Name { get; set; }
-            public string Email { get; set; }
-            public string Tag { get; set; }
-            public string Picture { get; set; }
+            public decimal SourceUserGoogleId { get; set; }
+            public int MessageIdToEcho { get; set; }
         }
 
-        class MessageSeed
+        private class FavoriteSeed
+        {
+            public decimal SourceUserGoogleId { get; set; }
+            public int MessageId { get; set; }
+        }
+
+        private class FollowerSeed
+        {
+            public decimal SourceUserGoogleId { get; set; }
+            public decimal UserGoogleIdToFollow { get; set; }
+        }
+
+        private class MessageSeed
         {
             public decimal UserGoogleId { get; set; }
             public string MessageBody { get; set; }
@@ -224,25 +334,7 @@ namespace ShortStuff.Data
             public int TopicId { get; set; }
         }
 
-        class FollowerSeed
-        {
-            public decimal SourceUserGoogleId { get; set; }
-            public decimal UserGoogleIdToFollow { get; set; }
-        }
-
-        class EchoSeed
-        {
-            public decimal SourceUserGoogleId { get; set; }
-            public int MessageIdToEcho { get; set; }
-        }
-
-        class FavoriteSeed
-        {
-            public decimal SourceUserGoogleId { get; set; }
-            public int MessageId { get; set; }
-        }
-
-        class NotificationSeed
+        private class NotificationSeed
         {
             public decimal OwnerGoogleId { get; set; }
             public NotificationType NotificationType { get; set; }
@@ -251,7 +343,15 @@ namespace ShortStuff.Data
             public int SourceTopicId { get; set; }
             public NotificationStatus NotificationStatus { get; set; }
         }
+
         // ReSharper disable UnusedMember.Local
+
+        private enum NotificationStatus
+        {
+            Unread = 0,
+            Read = 1
+        }
+
         private enum NotificationType
         {
             NewFollower = 0,
@@ -262,12 +362,16 @@ namespace ShortStuff.Data
             TopicNewMessage = 5
             // Later this could contain private message notifications
         }
-        
-        private enum NotificationStatus
+
+        private class UserSeed
         {
-            Unread = 0,
-            Read = 1
+            public decimal UserGoogleId { get; set; }
+            public string Name { get; set; }
+            public string Email { get; set; }
+            public string Tag { get; set; }
+            public string Picture { get; set; }
         }
+
         // ReSharper restore UnusedMember.Local
     }
 }

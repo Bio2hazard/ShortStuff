@@ -1,4 +1,10 @@
-﻿using System.Data.Entity;
+﻿// ShortStuff.Data
+// ShortStuffContext.cs
+// 
+// Licensed under GNU GPL v2.0
+// See License/GPLv2.txt for details
+
+using System.Data.Entity;
 using ShortStuff.Data.Entities;
 using ShortStuff.Data.Mappers;
 
@@ -6,9 +12,7 @@ namespace ShortStuff.Data
 {
     public class ShortStuffContext : DbContext
     {
-
-        public ShortStuffContext()
-            : base("ShortStuffContext")
+        public ShortStuffContext() : base("ShortStuffContext")
         {
             // Lazy Loading Settings
             Configuration.ProxyCreationEnabled = false;

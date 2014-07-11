@@ -1,4 +1,10 @@
-﻿using System;
+﻿// ShortStuff.Repository
+// MaxDepthCloneInjector.cs
+// 
+// Licensed under GNU GPL v2.0
+// See License/GPLv2.txt for details
+
+using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -11,19 +17,14 @@ namespace ShortStuff.Repository.ValueInjecter
 {
     public class MaxDepthCloneInjector : SmartConventionInjection
     {
-        private int _maxDepth;
         private static readonly ConcurrentDictionary<Type, ConcurrentDictionary<KeyValuePair<Type, Type>, Path>> WasLearned = new ConcurrentDictionary<Type, ConcurrentDictionary<KeyValuePair<Type, Type>, Path>>();
-
-        private class Path
-        {
-            public IDictionary<string, string> MatchingProps { get; set; }
-        }
+        private int _maxDepth;
 
         public MaxDepthCloneInjector(int maxDepth)
         {
             _maxDepth = maxDepth;
         }
-        
+
         protected bool NameMatch(SmartConventionInfo c)
         {
             return c.SourceProp.Name == c.TargetProp.Name;
@@ -32,10 +33,13 @@ namespace ShortStuff.Repository.ValueInjecter
         protected void ExecuteDeepMatch(SmartMatchInfo mi)
         {
             var sourceVal = GetValue(mi.SourceProp, mi.Source);
-            if (sourceVal == null) return;
+            if (sourceVal == null)
+            {
+                return;
+            }
 
             //for value types and string just return the value as is
-            if (mi.SourceProp.PropertyType.IsValueType || mi.SourceProp.PropertyType == typeof(string))
+            if (mi.SourceProp.PropertyType.IsValueType || mi.SourceProp.PropertyType == typeof (string))
             {
                 SetValue(mi.TargetProp, mi.Target, sourceVal);
                 return;
@@ -51,17 +55,22 @@ namespace ShortStuff.Repository.ValueInjecter
                 for (var index = 0; index < arr.Length; index++)
                 {
                     var arriVal = arr.GetValue(index);
-                    if (arriVal.GetType().IsValueType || arriVal is string) continue;
+                    if (arriVal.GetType()
+                               .IsValueType || arriVal is string)
+                    {
+                        continue;
+                    }
                     if (_maxDepth > 1)
                     {
 // ReSharper disable once PossibleNullReferenceException
                         arrayClone.SetValue(Activator.CreateInstance(arriVal.GetType())
-                                                     .InjectFrom(new MaxDepthCloneInjector(_maxDepth-1), arriVal), index);
+                                                     .InjectFrom(new MaxDepthCloneInjector(_maxDepth - 1), arriVal), index);
                     }
                     else
                     {
 // ReSharper disable once PossibleNullReferenceException
-                        arrayClone.SetValue(Activator.CreateInstance(arriVal.GetType()).InjectFrom<SmartConventionInjection>(arriVal), index);
+                        arrayClone.SetValue(Activator.CreateInstance(arriVal.GetType())
+                                                     .InjectFrom<SmartConventionInjection>(arriVal), index);
                     }
                 }
                 SetValue(mi.TargetProp, mi.Target, arrayClone);
@@ -71,18 +80,23 @@ namespace ShortStuff.Repository.ValueInjecter
             if (mi.SourceProp.PropertyType.IsGenericType)
             {
                 //handle IEnumerable<> also ICollection<> IList<> List<>
-                if (mi.SourceProp.PropertyType.GetGenericTypeDefinition().GetInterfaces().Contains(typeof(IEnumerable)))
+                if (mi.SourceProp.PropertyType.GetGenericTypeDefinition()
+                      .GetInterfaces()
+                      .Contains(typeof (IEnumerable)))
                 {
                     var genericArgument = mi.TargetProp.PropertyType.GetGenericArguments()[0];
 
-                    var tlist = typeof(List<>).MakeGenericType(genericArgument);
+                    var tlist = typeof (List<>).MakeGenericType(genericArgument);
 
                     var list = Activator.CreateInstance(tlist);
 
-                    if (genericArgument.IsValueType || genericArgument == typeof(string))
+                    if (genericArgument.IsValueType || genericArgument == typeof (string))
                     {
                         var addRange = tlist.GetMethod("AddRange");
-                        addRange.Invoke(list, new[] { sourceVal });
+                        addRange.Invoke(list, new[]
+                        {
+                            sourceVal
+                        });
                     }
                     else
                     {
@@ -92,13 +106,20 @@ namespace ShortStuff.Repository.ValueInjecter
                         {
                             if (_maxDepth > 1)
                             {
-                                addMethod.Invoke(list, new[] { Activator.CreateInstance(genericArgument).InjectFrom(new MaxDepthCloneInjector(_maxDepth-1), o) });
+                                addMethod.Invoke(list, new[]
+                                {
+                                    Activator.CreateInstance(genericArgument)
+                                             .InjectFrom(new MaxDepthCloneInjector(_maxDepth - 1), o)
+                                });
                             }
                             else
                             {
-                                addMethod.Invoke(list, new[] { Activator.CreateInstance(genericArgument).InjectFrom<SmartConventionInjection>(o) });
+                                addMethod.Invoke(list, new[]
+                                {
+                                    Activator.CreateInstance(genericArgument)
+                                             .InjectFrom<SmartConventionInjection>(o)
+                                });
                             }
-                            
                         }
                     }
                     SetValue(mi.TargetProp, mi.Target, list);
@@ -111,13 +132,14 @@ namespace ShortStuff.Repository.ValueInjecter
             //for simple object types create a new instace and apply the clone injection on it
             if (_maxDepth > 1)
             {
-                SetValue(mi.TargetProp, mi.Target, Activator.CreateInstance(mi.TargetProp.PropertyType).InjectFrom(new MaxDepthCloneInjector(_maxDepth-1), sourceVal));
+                SetValue(mi.TargetProp, mi.Target, Activator.CreateInstance(mi.TargetProp.PropertyType)
+                                                            .InjectFrom(new MaxDepthCloneInjector(_maxDepth - 1), sourceVal));
             }
             else
             {
-                SetValue(mi.TargetProp, mi.Target, Activator.CreateInstance(mi.TargetProp.PropertyType).InjectFrom<SmartConventionInjection>(sourceVal));
+                SetValue(mi.TargetProp, mi.Target, Activator.CreateInstance(mi.TargetProp.PropertyType)
+                                                            .InjectFrom<SmartConventionInjection>(sourceVal));
             }
-            
         }
 
         private Path Learn(object source, object target)
@@ -143,19 +165,35 @@ namespace ShortStuff.Repository.ValueInjecter
 
                     if (_maxDepth > 0)
                     {
-                        if(!NameMatch(smartConventionInfo)) continue;
+                        if (!NameMatch(smartConventionInfo))
+                        {
+                            continue;
+                        }
                     }
                     else
                     {
-                        if(!Match(smartConventionInfo)) continue;
+                        if (!Match(smartConventionInfo))
+                        {
+                            continue;
+                        }
                     }
-                        
+
                     if (path == null)
+                    {
                         path = new Path
                         {
-                            MatchingProps = new Dictionary<string, string> { { smartConventionInfo.SourceProp.Name, smartConventionInfo.TargetProp.Name } }
+                            MatchingProps = new Dictionary<string, string>
+                            {
+                                {
+                                    smartConventionInfo.SourceProp.Name, smartConventionInfo.TargetProp.Name
+                                }
+                            }
                         };
-                    else path.MatchingProps.Add(smartConventionInfo.SourceProp.Name, smartConventionInfo.TargetProp.Name);
+                    }
+                    else
+                    {
+                        path.MatchingProps.Add(smartConventionInfo.SourceProp.Name, smartConventionInfo.TargetProp.Name);
+                    }
                 }
             }
             return path;
@@ -170,7 +208,10 @@ namespace ShortStuff.Repository.ValueInjecter
 
             var path = cacheEntry.GetOrAdd(new KeyValuePair<Type, Type>(source.GetType(), target.GetType()), pair => Learn(source, target));
 
-            if (path == null) return;
+            if (path == null)
+            {
+                return;
+            }
 
             foreach (var pair in path.MatchingProps)
             {
@@ -196,9 +237,9 @@ namespace ShortStuff.Repository.ValueInjecter
                         TargetProp = targetProp
                     });
                 }
-
             }
         }
+
         protected override void SetValue(PropertyDescriptor prop, object component, object value)
         {
             var a = TypeAccessor.Create(component.GetType());
@@ -209,6 +250,11 @@ namespace ShortStuff.Repository.ValueInjecter
         {
             var a = TypeAccessor.Create(component.GetType(), true);
             return a[component, prop.Name];
+        }
+
+        private class Path
+        {
+            public IDictionary<string, string> MatchingProps { get; set; }
         }
     }
 }

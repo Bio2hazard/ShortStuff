@@ -1,10 +1,15 @@
-﻿using System;
+﻿// ShortStuff.Web
+// UserAsyncController.cs
+// 
+// Licensed under GNU GPL v2.0
+// See License/GPLv2.txt for details
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using System.Web.Http;
-using ShortStuff.Domain;
 using ShortStuff.Domain.Entities;
 using ShortStuff.Domain.Enums;
 using ShortStuff.Domain.Services;
@@ -14,10 +19,9 @@ namespace ShortStuff.Web.Controllers
 {
     public class UserAsyncController : BaseController
     {
-        private IUserService _userService;
-        
+        private readonly IUserService _userService;
 
-        public UserAsyncController(IUnitOfWork unitOfWork, IUserService userService) : base(unitOfWork)
+        public UserAsyncController(IUserService userService)
         {
             _userService = userService;
         }
@@ -26,7 +30,7 @@ namespace ShortStuff.Web.Controllers
         {
             try
             {
-                return GetHttpActionResult(await UnitOfWork.UserRepository.GetAllAsync());
+                return GetHttpActionResult(await _userService.GetAllAsync());
             }
             catch (Exception ex)
             {
@@ -42,7 +46,7 @@ namespace ShortStuff.Web.Controllers
         {
             try
             {
-                return GetHttpActionResult(await UnitOfWork.UserRepository.GetByIdAsync(id));
+                return GetHttpActionResult(await _userService.GetByIdAsync(id));
             }
             catch (Exception ex)
             {
@@ -60,13 +64,16 @@ namespace ShortStuff.Web.Controllers
             var validationRules = brokenRules as IList<ValidationRule> ?? brokenRules.ToList();
             if (validationRules.Any())
             {
-                return ApiControllerExtension.BadRequest(this, validationRules, data.GetType().Name);
+                return ApiControllerExtension.BadRequest(this, validationRules, data.GetType()
+                                                                                    .Name);
             }
 
-            var status = await UnitOfWork.UserRepository.CreateAsync(data);
+            var status = await _userService.CreateAsync(data);
 
             if (status.Status == CreateStatusEnum.Conflict)
+            {
                 return Conflict();
+            }
 
             return CreateHttpActionResult("UserAsync", status.Id);
         }
@@ -79,47 +86,58 @@ namespace ShortStuff.Web.Controllers
             var validationRules = brokenRules as IList<ValidationRule> ?? brokenRules.ToList();
             if (validationRules.Any())
             {
-                return ApiControllerExtension.BadRequest(this, validationRules, data.GetType().Name);
+                return ApiControllerExtension.BadRequest(this, validationRules, data.GetType()
+                                                                                    .Name);
             }
             data.Id = id;
 
-            var status = await UnitOfWork.UserRepository.UpdateAsync(data);
+            var status = await _userService.UpdateAsync(data);
 
             switch (status)
             {
-                    case UpdateStatus.NotFound:
-                        return await Post(data);
+                case UpdateStatus.NotFound:
+                    return await Post(data);
             }
             return StatusCode(HttpStatusCode.NoContent);
         }
 
         public async Task<IHttpActionResult> Delete(decimal id)
         {
-            await UnitOfWork.UserRepository.DeleteAsync(id);
+            await _userService.DeleteAsync(id);
             return StatusCode(HttpStatusCode.NoContent);
         }
 
         // Service Methods
 
         [HttpGet]
-        [Route("api/usersasync/bytag/{tag}")]
+        [Route("api/userasync/bytag/{tag}")]
         public async Task<IHttpActionResult> GetUserByTag(string tag)
         {
-            return Ok();
+            try
+            {
+                return GetHttpActionResult(await _userService.GetByTagAsync(tag));
+            }
+            catch (Exception ex)
+            {
+#if DEBUG
+                return InternalServerError(ex);
+#else
+                return InternalServerError();
+#endif
+            }
         }
 
-
-        /// <summary>
-        /// Returns the users Messages, Echoes
-        /// </summary>
-        /// <param name="id"></param>
-        /// <param name="includeReplies"></param>
-        /// <returns></returns>
-        [HttpGet]
-        [Route("api/userasync/{id:decimal}/feed")]
-        public async Task<IHttpActionResult> GetUserFeed(decimal id, [FromUri] bool includeReplies = false)
-        {
-            return Ok();
-        }
+        ///// <summary>
+        ///// Returns the users Messages, Echoes
+        ///// </summary>
+        ///// <param name="id"></param>
+        ///// <param name="includeReplies"></param>
+        ///// <returns></returns>
+        //[HttpGet]
+        //[Route("api/userasync/{id:decimal}/feed")]
+        //public async Task<IHttpActionResult> GetUserFeed(decimal id, [FromUri] bool includeReplies = false)
+        //{
+        //    return Ok();
+        //}
     }
 }

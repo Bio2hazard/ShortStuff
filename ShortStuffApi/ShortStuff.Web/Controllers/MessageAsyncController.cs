@@ -1,11 +1,15 @@
-﻿using System;
+﻿// ShortStuff.Web
+// MessageAsyncController.cs
+// 
+// Licensed under GNU GPL v2.0
+// See License/GPLv2.txt for details
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using System.Web.Http;
-using System.Web.Http.Results;
-using ShortStuff.Domain;
 using ShortStuff.Domain.Entities;
 using ShortStuff.Domain.Enums;
 using ShortStuff.Domain.Services;
@@ -15,10 +19,9 @@ namespace ShortStuff.Web.Controllers
 {
     public class MessageAsyncController : BaseController
     {
-        private IMessageService _messageService;
-        
+        private readonly IMessageService _messageService;
 
-        public MessageAsyncController(IUnitOfWork unitOfWork, IMessageService messageService) : base(unitOfWork)
+        public MessageAsyncController(IMessageService messageService)
         {
             _messageService = messageService;
         }
@@ -27,7 +30,7 @@ namespace ShortStuff.Web.Controllers
         {
             try
             {
-                return GetHttpActionResult(await UnitOfWork.MessageRepository.GetAllAsync());
+                return GetHttpActionResult(await _messageService.GetAllAsync());
             }
             catch (Exception ex)
             {
@@ -43,7 +46,7 @@ namespace ShortStuff.Web.Controllers
         {
             try
             {
-                return GetHttpActionResult(await UnitOfWork.MessageRepository.GetByIdAsync(id));
+                return GetHttpActionResult(await _messageService.GetByIdAsync(id));
             }
             catch (Exception ex)
             {
@@ -61,13 +64,16 @@ namespace ShortStuff.Web.Controllers
             var validationRules = brokenRules as IList<ValidationRule> ?? brokenRules.ToList();
             if (validationRules.Any())
             {
-                return ApiControllerExtension.BadRequest(this, validationRules, data.GetType().Name);
+                return ApiControllerExtension.BadRequest(this, validationRules, data.GetType()
+                                                                                    .Name);
             }
 
-            var status = await UnitOfWork.MessageRepository.CreateAsync(data);
+            var status = await _messageService.CreateAsync(data);
 
             if (status.Status == CreateStatusEnum.Conflict)
+            {
                 return Conflict();
+            }
 
             return CreateHttpActionResult("MessageAsync", status.Id);
         }
@@ -80,15 +86,16 @@ namespace ShortStuff.Web.Controllers
             var validationRules = brokenRules as IList<ValidationRule> ?? brokenRules.ToList();
             if (validationRules.Any())
             {
-                return ApiControllerExtension.BadRequest(this, validationRules, data.GetType().Name);
+                return ApiControllerExtension.BadRequest(this, validationRules, data.GetType()
+                                                                                    .Name);
             }
             data.Id = id;
 
-            var status = await UnitOfWork.MessageRepository.UpdateAsync(data);
+            var status = await _messageService.UpdateAsync(data);
 
             switch (status)
             {
-                    case UpdateStatus.NotFound:
+                case UpdateStatus.NotFound:
                     return await Post(data);
             }
             return StatusCode(HttpStatusCode.NoContent);
@@ -96,7 +103,7 @@ namespace ShortStuff.Web.Controllers
 
         public async Task<IHttpActionResult> Delete(int id)
         {
-            await UnitOfWork.MessageRepository.DeleteAsync(id);
+            await _messageService.DeleteAsync(id);
             return StatusCode(HttpStatusCode.NoContent);
         }
     }

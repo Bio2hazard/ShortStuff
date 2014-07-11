@@ -1,15 +1,21 @@
-﻿using ShortStuff.Domain;
+﻿// ShortStuff.Repository
+// UnitOfWork.cs
+// 
+// Licensed under GNU GPL v2.0
+// See License/GPLv2.txt for details
+
+using ShortStuff.Domain;
 using ShortStuff.Domain.Entities;
 
 namespace ShortStuff.Repository
 {
     public class UnitOfWork : IUnitOfWork
     {
-        private readonly IRepository<User, decimal> _userRepository;
-        private readonly IRepository<Message, int> _messageRepository;
         private readonly IRepository<Echo, int> _echoRepository;
+        private readonly IRepository<Message, int> _messageRepository;
         private readonly IRepository<Notification, int> _notificationRepository;
         private readonly IRepository<Topic, int> _topicRepository;
+        private readonly IRepository<User, decimal> _userRepository;
 
         public UnitOfWork(IRepository<User, decimal> userRepository, IRepository<Message, int> messageRepository, IRepository<Echo, int> echoRepository, IRepository<Notification, int> notificationRepository, IRepository<Topic, int> topicRepository)
         {

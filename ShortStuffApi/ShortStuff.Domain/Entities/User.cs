@@ -1,4 +1,10 @@
-﻿using System;
+﻿// ShortStuff.Domain
+// User.cs
+// 
+// Licensed under GNU GPL v2.0
+// See License/GPLv2.txt for details
+
+using System;
 using System.Collections.Generic;
 
 namespace ShortStuff.Domain.Entities
@@ -10,7 +16,7 @@ namespace ShortStuff.Domain.Entities
         public string Tag { get; set; }
         public string Picture { get; set; }
         public IEnumerable<Message> Messages { get; set; }
-        public IEnumerable<Echo> Echoes { get; set; } 
+        public IEnumerable<Echo> Echoes { get; set; }
         public IEnumerable<User> Followers { get; set; }
         public IEnumerable<User> Following { get; set; }
         public IEnumerable<Message> Favorites { get; set; }

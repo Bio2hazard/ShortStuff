@@ -1,10 +1,15 @@
-﻿using System;
+﻿// ShortStuff.Data
+// Notification.cs
+// 
+// Licensed under GNU GPL v2.0
+// See License/GPLv2.txt for details
+
+using System;
 
 namespace ShortStuff.Data.Entities
 {
     public class Notification : IDataEntity<int>
     {
-        public int Id { get; set; }
         public virtual User Owner { get; set; }
         public decimal OwnerId { get; set; }
         public DateTime CreationDate { get; set; }
@@ -18,6 +23,6 @@ namespace ShortStuff.Data.Entities
         public virtual Echo SourceEcho { get; set; }
         public int? SourceEchoId { get; set; }
         public int NotificationStatus { get; set; }
-
+        public int Id { get; set; }
     }
 }

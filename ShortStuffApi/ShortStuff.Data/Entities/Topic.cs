@@ -1,4 +1,10 @@
-﻿using System.Collections.Generic;
+﻿// ShortStuff.Data
+// Topic.cs
+// 
+// Licensed under GNU GPL v2.0
+// See License/GPLv2.txt for details
+
+using System.Collections.Generic;
 
 namespace ShortStuff.Data.Entities
 {
@@ -10,9 +16,9 @@ namespace ShortStuff.Data.Entities
         //    Subscribers = new List<User>();
         //}
 
-        public int Id { get; set; }
         public string Name { get; set; }
         public virtual ICollection<Message> Messages { get; set; }
         public virtual ICollection<User> Subscribers { get; set; }
+        public int Id { get; set; }
     }
 }

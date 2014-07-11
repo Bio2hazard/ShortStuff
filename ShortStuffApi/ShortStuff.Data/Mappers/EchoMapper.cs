@@ -1,10 +1,16 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿// ShortStuff.Data
+// EchoMapper.cs
+// 
+// Licensed under GNU GPL v2.0
+// See License/GPLv2.txt for details
+
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using ShortStuff.Data.Entities;
 
 namespace ShortStuff.Data.Mappers
 {
-    class EchoMapper : EntityTypeConfiguration<Echo>
+    internal class EchoMapper : EntityTypeConfiguration<Echo>
     {
         public EchoMapper()
         {

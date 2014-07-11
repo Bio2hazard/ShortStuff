@@ -1,4 +1,10 @@
-﻿using System.Collections.Generic;
+﻿// ShortStuff.Web
+// ApiControllerExtension.cs
+// 
+// Licensed under GNU GPL v2.0
+// See License/GPLv2.txt for details
+
+using System.Collections.Generic;
 using System.Web.Http;
 using ShortStuff.Domain.Entities;
 

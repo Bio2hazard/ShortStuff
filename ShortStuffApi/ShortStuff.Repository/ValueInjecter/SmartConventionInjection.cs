@@ -1,4 +1,10 @@
-﻿using System;
+﻿// ShortStuff.Repository
+// SmartConventionInjection.cs
+// 
+// Licensed under GNU GPL v2.0
+// See License/GPLv2.txt for details
+
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -8,11 +14,6 @@ namespace ShortStuff.Repository.ValueInjecter
 {
     public class SmartConventionInjection : ValueInjection
     {
-        private class Path
-        {
-            public IDictionary<string, string> MatchingProps { get; set; }
-        }
-
         private static readonly ConcurrentDictionary<Type, ConcurrentDictionary<KeyValuePair<Type, Type>, Path>> WasLearned = new ConcurrentDictionary<Type, ConcurrentDictionary<KeyValuePair<Type, Type>, Path>>();
 
         protected virtual void SetValue(PropertyDescriptor prop, object component, object value)
@@ -26,16 +27,13 @@ namespace ShortStuff.Repository.ValueInjecter
         }
 
         /// <summary>
-        /// Determines if 2 properties match.
-        /// Match is determined by name and type.
-        /// The type check is lenient towards comparing base types to nullable types.
+        ///     Determines if 2 properties match.
+        ///     Match is determined by name and type.
+        ///     The type check is lenient towards comparing base types to nullable types.
         /// </summary>
         protected virtual bool Match(SmartConventionInfo c)
         {
-            return c.SourceProp.Name == c.TargetProp.Name && 
-                (c.SourceProp.PropertyType == c.TargetProp.PropertyType || 
-                Nullable.GetUnderlyingType(c.SourceProp.PropertyType) == c.TargetProp.PropertyType ||
-                c.SourceProp.PropertyType == Nullable.GetUnderlyingType(c.TargetProp.PropertyType));
+            return c.SourceProp.Name == c.TargetProp.Name && (c.SourceProp.PropertyType == c.TargetProp.PropertyType || Nullable.GetUnderlyingType(c.SourceProp.PropertyType) == c.TargetProp.PropertyType || c.SourceProp.PropertyType == Nullable.GetUnderlyingType(c.TargetProp.PropertyType));
         }
 
         protected virtual void ExecuteMatch(SmartMatchInfo mi)
@@ -64,13 +62,26 @@ namespace ShortStuff.Repository.ValueInjecter
                     var targetProp = targetProps[j];
                     smartConventionInfo.TargetProp = targetProp;
 
-                    if (!Match(smartConventionInfo)) continue;
+                    if (!Match(smartConventionInfo))
+                    {
+                        continue;
+                    }
                     if (path == null)
+                    {
                         path = new Path
                         {
-                            MatchingProps = new Dictionary<string, string> { { smartConventionInfo.SourceProp.Name, smartConventionInfo.TargetProp.Name } }
+                            MatchingProps = new Dictionary<string, string>
+                            {
+                                {
+                                    smartConventionInfo.SourceProp.Name, smartConventionInfo.TargetProp.Name
+                                }
+                            }
                         };
-                    else path.MatchingProps.Add(smartConventionInfo.SourceProp.Name, smartConventionInfo.TargetProp.Name);
+                    }
+                    else
+                    {
+                        path.MatchingProps.Add(smartConventionInfo.SourceProp.Name, smartConventionInfo.TargetProp.Name);
+                    }
                 }
             }
             return path;
@@ -85,7 +96,10 @@ namespace ShortStuff.Repository.ValueInjecter
 
             var path = cacheEntry.GetOrAdd(new KeyValuePair<Type, Type>(source.GetType(), target.GetType()), pair => Learn(source, target));
 
-            if (path == null) return;
+            if (path == null)
+            {
+                return;
+            }
 
             foreach (var pair in path.MatchingProps)
             {
@@ -99,6 +113,11 @@ namespace ShortStuff.Repository.ValueInjecter
                     TargetProp = targetProp
                 });
             }
+        }
+
+        private class Path
+        {
+            public IDictionary<string, string> MatchingProps { get; set; }
         }
     }
 

@@ -16,6 +16,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShortStuff.Domain", "ShortS
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShortStuff.Web", "ShortStuff.Web\ShortStuff.Web.csproj", "{7436C0E0-48F8-46BB-B2A7-AAABE7641B96}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "License", "License", "{8A8D6FD2-D5E8-43A8-BAE4-9F8B48DF75DE}"
+	ProjectSection(SolutionItems) = preProject
+		GPLv2.txt = GPLv2.txt
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
