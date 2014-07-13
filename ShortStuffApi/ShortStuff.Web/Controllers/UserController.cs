@@ -4,9 +4,6 @@
 // Licensed under GNU GPL v2.0
 // See License/GPLv2.txt for details
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Web.Http;
 using ShortStuff.Domain.Entities;
@@ -27,101 +24,82 @@ namespace ShortStuff.Web.Controllers
 
         public IHttpActionResult Get()
         {
-            try
+            var result = _userService.GetAll();
+            if (result.ActionStatus.Status == ActionStatusEnum.Success)
             {
-                return GetHttpActionResult(_userService.GetAll());
+                return GetHttpActionResult(result.ActionDataSet);
             }
-            catch (Exception ex)
-            {
-#if DEBUG
-                return InternalServerError(ex);
-#else
-                return InternalServerError();
-#endif
-            }
+            return HandleErrorActionResult(result);
         }
 
         public IHttpActionResult Get(decimal id)
         {
-            try
+            var result = _userService.GetById(id);
+            if (result.ActionStatus.Status == ActionStatusEnum.Success)
             {
-                return GetHttpActionResult(_userService.GetById(id));
+                return GetHttpActionResult(result.ActionData);
             }
-            catch (Exception ex)
-            {
-#if DEBUG
-                return InternalServerError(ex);
-#else
-                return InternalServerError();
-#endif
-            }
+            return HandleErrorActionResult(result);
         }
 
         public IHttpActionResult Post(User data)
         {
-            var brokenRules = data.GetBrokenRules();
-            var validationRules = brokenRules as IList<ValidationRule> ?? brokenRules.ToList();
-            if (validationRules.Any())
+            var result = _userService.Create(data);
+
+            switch (result.ActionStatus.Status)
             {
-                return ApiControllerExtension.BadRequest(this, validationRules, data.GetType()
-                                                                                    .Name);
+                case ActionStatusEnum.Success:
+                    return CreateHttpActionResult("User", result.ActionStatus.Id);
+                case ActionStatusEnum.ValidationError:
+                    return ApiControllerExtension.BadRequest(this, result.BrokenValidationRules, data.GetType()
+                                                                                                     .Name);
+                case ActionStatusEnum.Conflict:
+                    return Conflict();
             }
-
-            var status = _userService.Create(data);
-
-            if (status.Status == CreateStatusEnum.Conflict)
-            {
-                return Conflict();
-            }
-
-            return CreateHttpActionResult("User", status.Id);
+            return HandleErrorActionResult(result);
         }
 
         [HttpPatch]
         [HttpPut]
         public IHttpActionResult Put(decimal id, User data)
         {
-            var brokenRules = data.GetUpdateBrokenRules();
-            var validationRules = brokenRules as IList<ValidationRule> ?? brokenRules.ToList();
-            if (validationRules.Any())
-            {
-                return ApiControllerExtension.BadRequest(this, validationRules, data.GetType()
-                                                                                    .Name);
-            }
             data.Id = id;
+            var result = _userService.Update(data);
 
-            var status = _userService.Update(data);
-
-            switch (status)
+            switch (result.ActionStatus.Status)
             {
-                case UpdateStatus.NotFound:
-                    return Post(data);
+                case ActionStatusEnum.Success:
+                    return result.ActionStatus.SubStatus == ActionSubStatusEnum.Created ? CreateHttpActionResult("User", result.ActionStatus.Id) : StatusCode(HttpStatusCode.NoContent);
+                case ActionStatusEnum.ValidationError:
+                    return ApiControllerExtension.BadRequest(this, result.BrokenValidationRules, data.GetType()
+                                                                                                     .Name);
+                case ActionStatusEnum.Conflict:
+                    return Conflict();
             }
-            return StatusCode(HttpStatusCode.NoContent);
+            return HandleErrorActionResult(result);
         }
 
         public IHttpActionResult Delete(decimal id)
         {
-            _userService.Delete(id);
-            return StatusCode(HttpStatusCode.NoContent);
+            var result = _userService.Delete(id);
+            if (result.ActionStatus.Status == ActionStatusEnum.Success)
+            {
+                return StatusCode(HttpStatusCode.NoContent);
+            }
+            return HandleErrorActionResult(result);
         }
 
+        // Service Methods
         [HttpGet]
         [Route("api/user/bytag/{tag}")]
         public IHttpActionResult GetUserByTag(string tag)
         {
-            try
+            var result = _userService.GetByTag(tag);
+            if (result.ActionStatus.Status == ActionStatusEnum.Success)
             {
-                return GetHttpActionResult(_userService.GetByTag(tag));
+                return GetHttpActionResult(result.ActionData);
             }
-            catch (Exception ex)
-            {
-#if DEBUG
-                return InternalServerError(ex);
-#else
-                return InternalServerError();
-#endif
-            }
+            return HandleErrorActionResult(result);
         }
     }
 }

@@ -35,33 +35,33 @@ namespace ShortStuff.Repository
         {
             var convertedPredicate = predicate.ConvertExpression<TData, TDomain, TSearch>();
             return Context.Set<TData>()
-                           .Lambda<TData, TSearch>(convertedPredicate, value, type)
-                           .BuildQuery<TData, TDomain>();
+                          .Lambda<TData, TSearch>(convertedPredicate, value, type)
+                          .BuildQuery<TData, TDomain>();
         }
 
         public TDomain GetOne<TSearch>(Expression<Func<TDomain, TSearch>> predicate, TSearch value, ExpressionType type)
         {
             var convertedPredicate = predicate.ConvertExpression<TData, TDomain, TSearch>();
             return Context.Set<TData>()
-                           .Lambda(convertedPredicate, value, type)
-                           .FirstOrDefault()
-                           .BuildEntity(new TDomain());
+                          .Lambda(convertedPredicate, value, type)
+                          .FirstOrDefault()
+                          .BuildEntity(new TDomain());
         }
 
         public async Task<IEnumerable<TDomain>> GetWhereAsync<TSearch>(Expression<Func<TDomain, TSearch>> predicate, TSearch value, ExpressionType type)
         {
             var convertedPredicate = predicate.ConvertExpression<TData, TDomain, TSearch>();
             return await Context.Set<TData>()
-                                 .Lambda(convertedPredicate, value, type)
-                                 .BuildQueryAsync<TData, TDomain>();
+                                .Lambda(convertedPredicate, value, type)
+                                .BuildQueryAsync<TData, TDomain>();
         }
 
         public async Task<TDomain> GetOneAsync<TSearch>(Expression<Func<TDomain, TSearch>> predicate, TSearch value, ExpressionType type)
         {
             var convertedPredicate = predicate.ConvertExpression<TData, TDomain, TSearch>();
             var result = await Context.Set<TData>()
-                                       .Lambda(convertedPredicate, value, type)
-                                       .FirstOrDefaultAsync();
+                                      .Lambda(convertedPredicate, value, type)
+                                      .FirstOrDefaultAsync();
 
             return result.BuildEntity(new TDomain());
         }
@@ -69,141 +69,152 @@ namespace ShortStuff.Repository
         public IEnumerable<TDomain> GetAll()
         {
             return Context.Set<TData>()
-                           .BuildQuery<TData, TDomain>();
+                          .BuildQuery<TData, TDomain>();
         }
 
         public async Task<IEnumerable<TDomain>> GetAllAsync()
         {
             return await Context.Set<TData>()
-                                 .BuildQueryAsync<TData, TDomain>();
+                                .BuildQueryAsync<TData, TDomain>();
         }
 
         public TDomain GetById(TId id)
         {
             return Context.Set<TData>()
-                           .Find(id)
-                           .BuildEntity(new TDomain());
+                          .Find(id)
+                          .BuildEntity(new TDomain());
         }
 
         public async Task<TDomain> GetByIdAsync(TId id)
         {
             var result = await Context.Set<TData>()
-                                       .FindAsync(id);
+                                      .FindAsync(id);
 
             return result.BuildEntity(new TDomain());
         }
 
-        public CreateStatus<TId> Create(TDomain domainEntity)
+        public ActionStatus<TId> Create(TDomain domainEntity)
         {
             if (Context.Set<TData>()
-                        .Lambda(u => u.Id, domainEntity.Id)
-                        .Any())
+                       .Lambda(u => u.Id, domainEntity.Id)
+                       .Any())
             {
-                return new CreateStatus<TId>
+                return new ActionStatus<TId>
                 {
-                    Status = CreateStatusEnum.Conflict
+                    Status = ActionStatusEnum.Conflict
                 };
             }
 
             var dataEntity = new TData();
             dataEntity.InjectFrom<SmartConventionInjection>(domainEntity);
             Context.Set<TData>()
-                    .Add(dataEntity);
+                   .Add(dataEntity);
             Context.SaveChanges();
 
-            return new CreateStatus<TId>
+            return new ActionStatus<TId>
             {
-                Status = CreateStatusEnum.Created,
+                Status = ActionStatusEnum.Success,
+                SubStatus = ActionSubStatusEnum.Created,
                 Id = dataEntity.Id
             };
         }
 
-        public async Task<CreateStatus<TId>> CreateAsync(TDomain domainEntity)
+        public async Task<ActionStatus<TId>> CreateAsync(TDomain domainEntity)
         {
             if (await Context.Set<TData>()
-                              .Lambda(u => u.Id, domainEntity.Id)
-                              .AnyAsync())
+                             .Lambda(u => u.Id, domainEntity.Id)
+                             .AnyAsync())
             {
-                return new CreateStatus<TId>
+                return new ActionStatus<TId>
                 {
-                    Status = CreateStatusEnum.Conflict
+                    Status = ActionStatusEnum.Conflict
                 };
             }
 
             var dataEntity = new TData();
             dataEntity.InjectFrom<SmartConventionInjection>(domainEntity);
             Context.Set<TData>()
-                    .Add(dataEntity);
+                   .Add(dataEntity);
             await Context.SaveChangesAsync();
 
-            return new CreateStatus<TId>
+            return new ActionStatus<TId>
             {
-                Status = CreateStatusEnum.Created,
+                Status = ActionStatusEnum.Success,
+                SubStatus = ActionSubStatusEnum.Created,
                 Id = dataEntity.Id
             };
         }
 
-        public UpdateStatus Update(TDomain domainEntity)
+        public ActionStatus<TId> Update(TDomain domainEntity)
         {
             var dataEntity = Context.Set<TData>()
-                                     .Lambda(u => u.Id, domainEntity.Id)
-                                     .FirstOrDefault();
+                                    .Lambda(u => u.Id, domainEntity.Id)
+                                    .FirstOrDefault();
+
+            var returnStatus = new ActionStatus<TId>();
 
             if (dataEntity == null)
             {
-                return UpdateStatus.NotFound;
+                returnStatus.Status = ActionStatusEnum.NotFound;
+                return returnStatus;
             }
 
             var updatedDataEntity = dataEntity.InjectFrom<NotNullInjection>(domainEntity);
 
             var changeTracker = Context.ChangeTracker.Entries<TData>()
-                                        .FirstOrDefault(u => Equals(u.Entity.Id, domainEntity.Id));
+                                       .FirstOrDefault(u => Equals(u.Entity.Id, domainEntity.Id));
 
             // ReSharper disable once PossibleNullReferenceException
             changeTracker.CurrentValues.SetValues(updatedDataEntity);
 
-            return Context.SaveChanges() == 0 ? UpdateStatus.NoChange : UpdateStatus.Updated;
+            returnStatus.SubStatus = Context.SaveChanges() == 0 ? ActionSubStatusEnum.NoChange : ActionSubStatusEnum.Updated;
+
+            return returnStatus;
         }
 
-        public async Task<UpdateStatus> UpdateAsync(TDomain domainEntity)
+        public async Task<ActionStatus<TId>> UpdateAsync(TDomain domainEntity)
         {
             var dataEntity = await Context.Set<TData>()
-                                           .Lambda(u => u.Id, domainEntity.Id)
-                                           .FirstOrDefaultAsync();
+                                          .Lambda(u => u.Id, domainEntity.Id)
+                                          .FirstOrDefaultAsync();
+
+            var returnStatus = new ActionStatus<TId>();
 
             if (dataEntity == null)
             {
-                return UpdateStatus.NotFound;
+                returnStatus.Status = ActionStatusEnum.NotFound;
+                return returnStatus;
             }
 
             var updatedDataEntity = dataEntity.InjectFrom<NotNullInjection>(domainEntity);
 
             var changeTracker = Context.ChangeTracker.Entries<TData>()
-                                        .FirstOrDefault(u => Equals(u.Entity.Id, domainEntity.Id));
+                                       .FirstOrDefault(u => Equals(u.Entity.Id, domainEntity.Id));
 
             // ReSharper disable once PossibleNullReferenceException
             changeTracker.CurrentValues.SetValues(updatedDataEntity);
 
-            return await Context.SaveChangesAsync() == 0 ? UpdateStatus.NoChange : UpdateStatus.Updated;
+            returnStatus.SubStatus = await Context.SaveChangesAsync() == 0 ? ActionSubStatusEnum.NoChange : ActionSubStatusEnum.Updated;
+            return returnStatus;
         }
 
         public void Delete(TId id)
         {
             var dataEntity = Context.Set<TData>()
-                                     .Lambda(u => u.Id, id)
-                                     .FirstOrDefault();
+                                    .Lambda(u => u.Id, id)
+                                    .FirstOrDefault();
             Context.Set<TData>()
-                    .Remove(dataEntity);
+                   .Remove(dataEntity);
             Context.SaveChanges();
         }
 
         public async Task DeleteAsync(TId id)
         {
             var dataEntity = await Context.Set<TData>()
-                                           .Lambda(u => u.Id, id)
-                                           .FirstOrDefaultAsync();
+                                          .Lambda(u => u.Id, id)
+                                          .FirstOrDefaultAsync();
             Context.Set<TData>()
-                    .Remove(dataEntity);
+                   .Remove(dataEntity);
             await Context.SaveChangesAsync();
         }
     }

@@ -4,7 +4,7 @@
 // Licensed under GNU GPL v2.0
 // See License/GPLv2.txt for details
 
-using System.Collections.Generic;
+using System;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using ShortStuff.Domain.Entities;
@@ -15,6 +15,7 @@ namespace ShortStuff.Domain.Services
 {
     public class UserService : IUserService
     {
+        private readonly ActionResult<User, decimal> _actionResult = new ActionResult<User, decimal>();
         private readonly IUnitOfWork _unitOfWork;
 
         public UserService(IUnitOfWork unitOfWork)
@@ -22,64 +23,234 @@ namespace ShortStuff.Domain.Services
             _unitOfWork = unitOfWork;
         }
 
-        public IEnumerable<User> GetAll()
+        public ActionResult<User, decimal> GetAll()
         {
-            return _unitOfWork.UserRepository.GetAll();
+            try
+            {
+                _actionResult.ActionDataSet = _unitOfWork.UserRepository.GetAll();
+            }
+            catch (Exception ex)
+            {
+                _actionResult.ActionStatus.Status = ActionStatusEnum.ExceptionError;
+#if DEBUG
+                _actionResult.ActionException = ex;
+#endif
+            }
+            return _actionResult;
         }
 
-        public async Task<IEnumerable<User>> GetAllAsync()
+        public async Task<ActionResult<User, decimal>> GetAllAsync()
         {
-            return await _unitOfWork.UserRepository.GetAllAsync();
+            try
+            {
+                _actionResult.ActionDataSet = await _unitOfWork.UserRepository.GetAllAsync();
+            }
+            catch (Exception ex)
+            {
+                _actionResult.ActionStatus.Status = ActionStatusEnum.ExceptionError;
+#if DEBUG
+                _actionResult.ActionException = ex;
+#endif
+            }
+            return _actionResult;
         }
 
-        public User GetById(decimal id)
+        public ActionResult<User, decimal> GetById(decimal id)
         {
-            return _unitOfWork.UserRepository.GetById(id);
+            try
+            {
+                _actionResult.ActionData = _unitOfWork.UserRepository.GetById(id);
+                _actionResult.ActionStatus.Status = _actionResult.ActionData != null ? ActionStatusEnum.Success : ActionStatusEnum.NotFound;
+            }
+            catch (Exception ex)
+            {
+                _actionResult.ActionStatus.Status = ActionStatusEnum.ExceptionError;
+#if DEBUG
+                _actionResult.ActionException = ex;
+#endif
+            }
+            return _actionResult;
         }
 
-        public async Task<User> GetByIdAsync(decimal id)
+        public async Task<ActionResult<User, decimal>> GetByIdAsync(decimal id)
         {
-            return await _unitOfWork.UserRepository.GetByIdAsync(id);
+            try
+            {
+                _actionResult.ActionData = await _unitOfWork.UserRepository.GetByIdAsync(id);
+                _actionResult.ActionStatus.Status = _actionResult.ActionData != null ? ActionStatusEnum.Success : ActionStatusEnum.NotFound;
+            }
+            catch (Exception ex)
+            {
+                _actionResult.ActionStatus.Status = ActionStatusEnum.ExceptionError;
+#if DEBUG
+                _actionResult.ActionException = ex;
+#endif
+            }
+            return _actionResult;
         }
 
-        public CreateStatus<decimal> Create(User entity)
+        public ActionResult<User, decimal> Create(User entity)
         {
-            return _unitOfWork.UserRepository.Create(entity);
+            try
+            {
+                _actionResult.ActionData = entity;
+                if (!_actionResult.Validate())
+                {
+                    return _actionResult;
+                }
+
+                _actionResult.ActionStatus = _unitOfWork.UserRepository.Create(entity);
+            }
+            catch (Exception ex)
+            {
+                _actionResult.ActionStatus.Status = ActionStatusEnum.ExceptionError;
+#if DEBUG
+                _actionResult.ActionException = ex;
+#endif
+            }
+            return _actionResult;
         }
 
-        public async Task<CreateStatus<decimal>> CreateAsync(User entity)
+        public async Task<ActionResult<User, decimal>> CreateAsync(User entity)
         {
-            return await _unitOfWork.UserRepository.CreateAsync(entity);
+            try
+            {
+                _actionResult.ActionData = entity;
+                if (!_actionResult.Validate())
+                {
+                    return _actionResult;
+                }
+
+                _actionResult.ActionStatus = await _unitOfWork.UserRepository.CreateAsync(entity);
+            }
+            catch (Exception ex)
+            {
+                _actionResult.ActionStatus.Status = ActionStatusEnum.ExceptionError;
+#if DEBUG
+                _actionResult.ActionException = ex;
+#endif
+            }
+            return _actionResult;
         }
 
-        public UpdateStatus Update(User entity)
+        public ActionResult<User, decimal> Update(User entity)
         {
-            return _unitOfWork.UserRepository.Update(entity);
+            try
+            {
+                _actionResult.ActionData = entity;
+                if (!_actionResult.ValidateUpdate())
+                {
+                    return _actionResult;
+                }
+
+                _actionResult.ActionStatus = _unitOfWork.UserRepository.Update(entity);
+
+                if (_actionResult.ActionStatus.Status == ActionStatusEnum.NotFound)
+                {
+                    return Create(entity);
+                }
+            }
+            catch (Exception ex)
+            {
+                _actionResult.ActionStatus.Status = ActionStatusEnum.ExceptionError;
+#if DEBUG
+                _actionResult.ActionException = ex;
+#endif
+            }
+            return _actionResult;
         }
 
-        public async Task<UpdateStatus> UpdateAsync(User entity)
+        public async Task<ActionResult<User, decimal>> UpdateAsync(User entity)
         {
-            return await _unitOfWork.UserRepository.UpdateAsync(entity);
+            try
+            {
+                _actionResult.ActionData = entity;
+                if (!_actionResult.ValidateUpdate())
+                {
+                    return _actionResult;
+                }
+
+                _actionResult.ActionStatus = await _unitOfWork.UserRepository.UpdateAsync(entity);
+
+                if (_actionResult.ActionStatus.Status == ActionStatusEnum.NotFound)
+                {
+                    return await CreateAsync(entity);
+                }
+            }
+            catch (Exception ex)
+            {
+                _actionResult.ActionStatus.Status = ActionStatusEnum.ExceptionError;
+#if DEBUG
+                _actionResult.ActionException = ex;
+#endif
+            }
+            return _actionResult;
         }
 
-        public void Delete(decimal id)
+        public ActionResult<User, decimal> Delete(decimal id)
         {
-            _unitOfWork.UserRepository.Delete(id);
+            try
+            {
+                _unitOfWork.UserRepository.Delete(id);
+            }
+            catch (Exception ex)
+            {
+                _actionResult.ActionStatus.Status = ActionStatusEnum.ExceptionError;
+#if DEBUG
+                _actionResult.ActionException = ex;
+#endif
+            }
+            return _actionResult;
         }
 
-        public async Task DeleteAsync(decimal id)
+        public async Task<ActionResult<User, decimal>> DeleteAsync(decimal id)
         {
-            await _unitOfWork.UserRepository.DeleteAsync(id);
+            try
+            {
+                await _unitOfWork.UserRepository.DeleteAsync(id);
+            }
+            catch (Exception ex)
+            {
+                _actionResult.ActionStatus.Status = ActionStatusEnum.ExceptionError;
+#if DEBUG
+                _actionResult.ActionException = ex;
+#endif
+            }
+            return _actionResult;
         }
 
-        public User GetByTag(string tag)
+        public ActionResult<User, decimal> GetByTag(string tag)
         {
-            return _unitOfWork.UserRepository.GetOne(u => u.Tag, tag, ExpressionType.Equal);
+            try
+            {
+                _actionResult.ActionData = _unitOfWork.UserRepository.GetOne(u => u.Tag, tag, ExpressionType.Equal);
+                _actionResult.ActionStatus.Status = _actionResult.ActionData != null ? ActionStatusEnum.Success : ActionStatusEnum.NotFound;
+            }
+            catch (Exception ex)
+            {
+                _actionResult.ActionStatus.Status = ActionStatusEnum.ExceptionError;
+#if DEBUG
+                _actionResult.ActionException = ex;
+#endif
+            }
+            return _actionResult;
         }
 
-        public async Task<User> GetByTagAsync(string tag)
+        public async Task<ActionResult<User, decimal>> GetByTagAsync(string tag)
         {
-            return await _unitOfWork.UserRepository.GetOneAsync(u => u.Tag, tag, ExpressionType.Equal);
+            try
+            {
+                _actionResult.ActionData = await _unitOfWork.UserRepository.GetOneAsync(u => u.Tag, tag, ExpressionType.Equal);
+                _actionResult.ActionStatus.Status = _actionResult.ActionData != null ? ActionStatusEnum.Success : ActionStatusEnum.NotFound;
+            }
+            catch (Exception ex)
+            {
+                _actionResult.ActionStatus.Status = ActionStatusEnum.ExceptionError;
+#if DEBUG
+                _actionResult.ActionException = ex;
+#endif
+            }
+            return _actionResult;
         }
     }
 }

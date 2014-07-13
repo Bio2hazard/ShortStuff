@@ -4,25 +4,23 @@
 // Licensed under GNU GPL v2.0
 // See License/GPLv2.txt for details
 
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using ShortStuff.Domain.Entities;
-using ShortStuff.Domain.Enums;
 using ShortStuff.Domain.Helpers;
 
 namespace ShortStuff.Domain.Services
 {
     public interface ITopicService
     {
-        IEnumerable<Topic> GetAll();
-        Task<IEnumerable<Topic>> GetAllAsync();
-        Topic GetById(int id);
-        Task<Topic> GetByIdAsync(int id);
-        CreateStatus<int> Create(Topic entity);
-        Task<CreateStatus<int>> CreateAsync(Topic entity);
-        UpdateStatus Update(Topic entity);
-        Task<UpdateStatus> UpdateAsync(Topic entity);
-        void Delete(int id);
-        Task DeleteAsync(int id);
+        ActionResult<Topic, int> GetAll();
+        Task<ActionResult<Topic, int>> GetAllAsync();
+        ActionResult<Topic, int> GetById(int id);
+        Task<ActionResult<Topic, int>> GetByIdAsync(int id);
+        ActionResult<Topic, int> Create(Topic entity);
+        Task<ActionResult<Topic, int>> CreateAsync(Topic entity);
+        ActionResult<Topic, int> Update(Topic entity);
+        Task<ActionResult<Topic, int>> UpdateAsync(Topic entity);
+        ActionResult<Topic, int> Delete(int id);
+        Task<ActionResult<Topic, int>> DeleteAsync(int id);
     }
 }

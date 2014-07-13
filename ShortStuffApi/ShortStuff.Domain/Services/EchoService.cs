@@ -4,7 +4,7 @@
 // Licensed under GNU GPL v2.0
 // See License/GPLv2.txt for details
 
-using System.Collections.Generic;
+using System;
 using System.Threading.Tasks;
 using ShortStuff.Domain.Entities;
 using ShortStuff.Domain.Enums;
@@ -14,6 +14,7 @@ namespace ShortStuff.Domain.Services
 {
     public class EchoService : IEchoService
     {
+        private readonly ActionResult<Echo, int> _actionResult = new ActionResult<Echo, int>();
         private readonly IUnitOfWork _unitOfWork;
 
         public EchoService(IUnitOfWork unitOfWork)
@@ -21,54 +22,200 @@ namespace ShortStuff.Domain.Services
             _unitOfWork = unitOfWork;
         }
 
-        public IEnumerable<Echo> GetAll()
+        public ActionResult<Echo, int> GetAll()
         {
-            return _unitOfWork.EchoRepository.GetAll();
+            try
+            {
+                _actionResult.ActionDataSet = _unitOfWork.EchoRepository.GetAll();
+            }
+            catch (Exception ex)
+            {
+                _actionResult.ActionStatus.Status = ActionStatusEnum.ExceptionError;
+#if DEBUG
+                _actionResult.ActionException = ex;
+#endif
+            }
+            return _actionResult;
         }
 
-        public async Task<IEnumerable<Echo>> GetAllAsync()
+        public async Task<ActionResult<Echo, int>> GetAllAsync()
         {
-            return await _unitOfWork.EchoRepository.GetAllAsync();
+            try
+            {
+                _actionResult.ActionDataSet = await _unitOfWork.EchoRepository.GetAllAsync();
+            }
+            catch (Exception ex)
+            {
+                _actionResult.ActionStatus.Status = ActionStatusEnum.ExceptionError;
+#if DEBUG
+                _actionResult.ActionException = ex;
+#endif
+            }
+            return _actionResult;
         }
 
-        public Echo GetById(int id)
+        public ActionResult<Echo, int> GetById(int id)
         {
-            return _unitOfWork.EchoRepository.GetById(id);
+            try
+            {
+                _actionResult.ActionData = _unitOfWork.EchoRepository.GetById(id);
+                _actionResult.ActionStatus.Status = _actionResult.ActionData != null ? ActionStatusEnum.Success : ActionStatusEnum.NotFound;
+            }
+            catch (Exception ex)
+            {
+                _actionResult.ActionStatus.Status = ActionStatusEnum.ExceptionError;
+#if DEBUG
+                _actionResult.ActionException = ex;
+#endif
+            }
+            return _actionResult;
         }
 
-        public async Task<Echo> GetByIdAsync(int id)
+        public async Task<ActionResult<Echo, int>> GetByIdAsync(int id)
         {
-            return await _unitOfWork.EchoRepository.GetByIdAsync(id);
+            try
+            {
+                _actionResult.ActionData = await _unitOfWork.EchoRepository.GetByIdAsync(id);
+                _actionResult.ActionStatus.Status = _actionResult.ActionData != null ? ActionStatusEnum.Success : ActionStatusEnum.NotFound;
+            }
+            catch (Exception ex)
+            {
+                _actionResult.ActionStatus.Status = ActionStatusEnum.ExceptionError;
+#if DEBUG
+                _actionResult.ActionException = ex;
+#endif
+            }
+            return _actionResult;
         }
 
-        public CreateStatus<int> Create(Echo entity)
+        public ActionResult<Echo, int> Create(Echo entity)
         {
-            return _unitOfWork.EchoRepository.Create(entity);
+            try
+            {
+                _actionResult.ActionData = entity;
+                if (!_actionResult.Validate())
+                {
+                    return _actionResult;
+                }
+
+                _actionResult.ActionStatus = _unitOfWork.EchoRepository.Create(entity);
+            }
+            catch (Exception ex)
+            {
+                _actionResult.ActionStatus.Status = ActionStatusEnum.ExceptionError;
+#if DEBUG
+                _actionResult.ActionException = ex;
+#endif
+            }
+            return _actionResult;
         }
 
-        public async Task<CreateStatus<int>> CreateAsync(Echo entity)
+        public async Task<ActionResult<Echo, int>> CreateAsync(Echo entity)
         {
-            return await _unitOfWork.EchoRepository.CreateAsync(entity);
+            try
+            {
+                _actionResult.ActionData = entity;
+                if (!_actionResult.Validate())
+                {
+                    return _actionResult;
+                }
+
+                _actionResult.ActionStatus = await _unitOfWork.EchoRepository.CreateAsync(entity);
+            }
+            catch (Exception ex)
+            {
+                _actionResult.ActionStatus.Status = ActionStatusEnum.ExceptionError;
+#if DEBUG
+                _actionResult.ActionException = ex;
+#endif
+            }
+            return _actionResult;
         }
 
-        public UpdateStatus Update(Echo entity)
+        public ActionResult<Echo, int> Update(Echo entity)
         {
-            return _unitOfWork.EchoRepository.Update(entity);
+            try
+            {
+                _actionResult.ActionData = entity;
+                if (!_actionResult.ValidateUpdate())
+                {
+                    return _actionResult;
+                }
+
+                _actionResult.ActionStatus = _unitOfWork.EchoRepository.Update(entity);
+
+                if (_actionResult.ActionStatus.Status == ActionStatusEnum.NotFound)
+                {
+                    return Create(entity);
+                }
+            }
+            catch (Exception ex)
+            {
+                _actionResult.ActionStatus.Status = ActionStatusEnum.ExceptionError;
+#if DEBUG
+                _actionResult.ActionException = ex;
+#endif
+            }
+            return _actionResult;
         }
 
-        public async Task<UpdateStatus> UpdateAsync(Echo entity)
+        public async Task<ActionResult<Echo, int>> UpdateAsync(Echo entity)
         {
-            return await _unitOfWork.EchoRepository.UpdateAsync(entity);
+            try
+            {
+                _actionResult.ActionData = entity;
+                if (!_actionResult.ValidateUpdate())
+                {
+                    return _actionResult;
+                }
+
+                _actionResult.ActionStatus = await _unitOfWork.EchoRepository.UpdateAsync(entity);
+
+                if (_actionResult.ActionStatus.Status == ActionStatusEnum.NotFound)
+                {
+                    return await CreateAsync(entity);
+                }
+            }
+            catch (Exception ex)
+            {
+                _actionResult.ActionStatus.Status = ActionStatusEnum.ExceptionError;
+#if DEBUG
+                _actionResult.ActionException = ex;
+#endif
+            }
+            return _actionResult;
         }
 
-        public void Delete(int id)
+        public ActionResult<Echo, int> Delete(int id)
         {
-            _unitOfWork.EchoRepository.Delete(id);
+            try
+            {
+                _unitOfWork.EchoRepository.Delete(id);
+            }
+            catch (Exception ex)
+            {
+                _actionResult.ActionStatus.Status = ActionStatusEnum.ExceptionError;
+#if DEBUG
+                _actionResult.ActionException = ex;
+#endif
+            }
+            return _actionResult;
         }
 
-        public async Task DeleteAsync(int id)
+        public async Task<ActionResult<Echo, int>> DeleteAsync(int id)
         {
-            await _unitOfWork.EchoRepository.DeleteAsync(id);
+            try
+            {
+                await _unitOfWork.EchoRepository.DeleteAsync(id);
+            }
+            catch (Exception ex)
+            {
+                _actionResult.ActionStatus.Status = ActionStatusEnum.ExceptionError;
+#if DEBUG
+                _actionResult.ActionException = ex;
+#endif
+            }
+            return _actionResult;
         }
     }
 }

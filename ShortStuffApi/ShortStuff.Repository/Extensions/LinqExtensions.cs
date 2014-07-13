@@ -23,6 +23,7 @@ namespace ShortStuff.Repository.Extensions
         ///     Adds the navigational property identified by value to be included in the query and entity mapping, recursing a
         ///     maximum of depth times.
         /// </summary>
+        /// <param name="source">Generic Type Source</param>
         /// <param name="value">Navigational Property to add</param>
         /// <param name="depth">Desired recursion depth</param>
         public static TSource With<TSource>(this TSource source, string value, int depth = 0)

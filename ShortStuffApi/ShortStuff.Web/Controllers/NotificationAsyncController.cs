@@ -4,9 +4,6 @@
 // Licensed under GNU GPL v2.0
 // See License/GPLv2.txt for details
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using System.Web.Http;
@@ -28,83 +25,69 @@ namespace ShortStuff.Web.Controllers
 
         public async Task<IHttpActionResult> Get()
         {
-            try
+            var result = await _notificationService.GetAllAsync();
+            if (result.ActionStatus.Status == ActionStatusEnum.Success)
             {
-                return GetHttpActionResult(await _notificationService.GetAllAsync());
+                return GetHttpActionResult(result.ActionDataSet);
             }
-            catch (Exception ex)
-            {
-#if DEBUG
-                return InternalServerError(ex);
-#else
-                return InternalServerError();
-#endif
-            }
+            return HandleErrorActionResult(result);
         }
 
         public async Task<IHttpActionResult> Get(int id)
         {
-            try
+            var result = await _notificationService.GetByIdAsync(id);
+            if (result.ActionStatus.Status == ActionStatusEnum.Success)
             {
-                return GetHttpActionResult(await _notificationService.GetByIdAsync(id));
+                return GetHttpActionResult(result.ActionData);
             }
-            catch (Exception ex)
-            {
-#if DEBUG
-                return InternalServerError(ex);
-#else
-                return InternalServerError();
-#endif
-            }
+            return HandleErrorActionResult(result);
         }
 
         public async Task<IHttpActionResult> Post(Notification data)
         {
-            var brokenRules = data.GetBrokenRules();
-            var validationRules = brokenRules as IList<ValidationRule> ?? brokenRules.ToList();
-            if (validationRules.Any())
+            var result = await _notificationService.CreateAsync(data);
+
+            switch (result.ActionStatus.Status)
             {
-                return ApiControllerExtension.BadRequest(this, validationRules, data.GetType()
-                                                                                    .Name);
+                case ActionStatusEnum.Success:
+                    return CreateHttpActionResult("NotificationAsync", result.ActionStatus.Id);
+                case ActionStatusEnum.ValidationError:
+                    return ApiControllerExtension.BadRequest(this, result.BrokenValidationRules, data.GetType()
+                                                                                                     .Name);
+                case ActionStatusEnum.Conflict:
+                    return Conflict();
             }
-
-            var status = await _notificationService.CreateAsync(data);
-
-            if (status.Status == CreateStatusEnum.Conflict)
-            {
-                return Conflict();
-            }
-
-            return CreateHttpActionResult("NotificationAsync", status.Id);
+            return HandleErrorActionResult(result);
         }
 
         [HttpPatch]
         [HttpPut]
         public async Task<IHttpActionResult> Put(int id, Notification data)
         {
-            var brokenRules = data.GetUpdateBrokenRules();
-            var validationRules = brokenRules as IList<ValidationRule> ?? brokenRules.ToList();
-            if (validationRules.Any())
-            {
-                return ApiControllerExtension.BadRequest(this, validationRules, data.GetType()
-                                                                                    .Name);
-            }
             data.Id = id;
+            var result = await _notificationService.UpdateAsync(data);
 
-            var status = await _notificationService.UpdateAsync(data);
-
-            switch (status)
+            switch (result.ActionStatus.Status)
             {
-                case UpdateStatus.NotFound:
-                    return await Post(data);
+                case ActionStatusEnum.Success:
+                    return result.ActionStatus.SubStatus == ActionSubStatusEnum.Created ? CreateHttpActionResult("NotificationAsync", result.ActionStatus.Id) : StatusCode(HttpStatusCode.NoContent);
+                case ActionStatusEnum.ValidationError:
+                    return ApiControllerExtension.BadRequest(this, result.BrokenValidationRules, data.GetType()
+                                                                                                     .Name);
+                case ActionStatusEnum.Conflict:
+                    return Conflict();
             }
-            return StatusCode(HttpStatusCode.NoContent);
+            return HandleErrorActionResult(result);
         }
 
         public async Task<IHttpActionResult> Delete(int id)
         {
-            await _notificationService.DeleteAsync(id);
-            return StatusCode(HttpStatusCode.NoContent);
+            var result = await _notificationService.DeleteAsync(id);
+            if (result.ActionStatus.Status == ActionStatusEnum.Success)
+            {
+                return StatusCode(HttpStatusCode.NoContent);
+            }
+            return HandleErrorActionResult(result);
         }
     }
 }

@@ -6,6 +6,9 @@
 
 using System.Web.Http;
 using System.Web.Http.Routing;
+using ShortStuff.Domain.Entities;
+using ShortStuff.Domain.Enums;
+using ShortStuff.Domain.Helpers;
 
 namespace ShortStuff.Web.Controllers
 {
@@ -38,6 +41,17 @@ namespace ShortStuff.Web.Controllers
                 });
             }
             return BadRequest();
+        }
+
+        protected IHttpActionResult HandleErrorActionResult<TEntity, TId>(ActionResult<TEntity, TId> result) where TEntity : ValidatableBase
+        {
+#if DEBUG
+            if (result.ActionStatus.Status == ActionStatusEnum.ExceptionError)
+            {
+                return InternalServerError(result.ActionException);
+            }
+#endif
+            return InternalServerError();
         }
     }
 }

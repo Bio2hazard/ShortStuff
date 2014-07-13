@@ -4,9 +4,6 @@
 // Licensed under GNU GPL v2.0
 // See License/GPLv2.txt for details
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Web.Http;
 using ShortStuff.Domain.Entities;
@@ -27,83 +24,69 @@ namespace ShortStuff.Web.Controllers
 
         public IHttpActionResult Get()
         {
-            try
+            var result = _messageService.GetAll();
+            if (result.ActionStatus.Status == ActionStatusEnum.Success)
             {
-                return GetHttpActionResult(_messageService.GetAll());
+                return GetHttpActionResult(result.ActionDataSet);
             }
-            catch (Exception ex)
-            {
-#if DEBUG
-                return InternalServerError(ex);
-#else
-                return InternalServerError();
-#endif
-            }
+            return HandleErrorActionResult(result);
         }
 
         public IHttpActionResult Get(int id)
         {
-            try
+            var result = _messageService.GetById(id);
+            if (result.ActionStatus.Status == ActionStatusEnum.Success)
             {
-                return GetHttpActionResult(_messageService.GetById(id));
+                return GetHttpActionResult(result.ActionData);
             }
-            catch (Exception ex)
-            {
-#if DEBUG
-                return InternalServerError(ex);
-#else
-                return InternalServerError();
-#endif
-            }
+            return HandleErrorActionResult(result);
         }
 
         public IHttpActionResult Post(Message data)
         {
-            var brokenRules = data.GetBrokenRules();
-            var validationRules = brokenRules as IList<ValidationRule> ?? brokenRules.ToList();
-            if (validationRules.Any())
+            var result = _messageService.Create(data);
+
+            switch (result.ActionStatus.Status)
             {
-                return ApiControllerExtension.BadRequest(this, validationRules, data.GetType()
-                                                                                    .Name);
+                case ActionStatusEnum.Success:
+                    return CreateHttpActionResult("Message", result.ActionStatus.Id);
+                case ActionStatusEnum.ValidationError:
+                    return ApiControllerExtension.BadRequest(this, result.BrokenValidationRules, data.GetType()
+                                                                                                     .Name);
+                case ActionStatusEnum.Conflict:
+                    return Conflict();
             }
-
-            var status = _messageService.Create(data);
-
-            if (status.Status == CreateStatusEnum.Conflict)
-            {
-                return Conflict();
-            }
-
-            return CreateHttpActionResult("Message", status.Id);
+            return HandleErrorActionResult(result);
         }
 
         [HttpPatch]
         [HttpPut]
         public IHttpActionResult Put(int id, Message data)
         {
-            var brokenRules = data.GetUpdateBrokenRules();
-            var validationRules = brokenRules as IList<ValidationRule> ?? brokenRules.ToList();
-            if (validationRules.Any())
-            {
-                return ApiControllerExtension.BadRequest(this, validationRules, data.GetType()
-                                                                                    .Name);
-            }
             data.Id = id;
+            var result = _messageService.Update(data);
 
-            var status = _messageService.Update(data);
-
-            switch (status)
+            switch (result.ActionStatus.Status)
             {
-                case UpdateStatus.NotFound:
-                    return Post(data);
+                case ActionStatusEnum.Success:
+                    return result.ActionStatus.SubStatus == ActionSubStatusEnum.Created ? CreateHttpActionResult("Message", result.ActionStatus.Id) : StatusCode(HttpStatusCode.NoContent);
+                case ActionStatusEnum.ValidationError:
+                    return ApiControllerExtension.BadRequest(this, result.BrokenValidationRules, data.GetType()
+                                                                                                     .Name);
+                case ActionStatusEnum.Conflict:
+                    return Conflict();
             }
-            return StatusCode(HttpStatusCode.NoContent);
+            return HandleErrorActionResult(result);
         }
 
         public IHttpActionResult Delete(int id)
         {
-            _messageService.Delete(id);
-            return StatusCode(HttpStatusCode.NoContent);
+            var result = _messageService.Delete(id);
+            if (result.ActionStatus.Status == ActionStatusEnum.Success)
+            {
+                return StatusCode(HttpStatusCode.NoContent);
+            }
+            return HandleErrorActionResult(result);
         }
     }
 }

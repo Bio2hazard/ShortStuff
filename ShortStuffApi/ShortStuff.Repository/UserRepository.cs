@@ -9,20 +9,10 @@ using ShortStuff.Data.Entities;
 
 namespace ShortStuff.Repository
 {
-    public class UserRepository : RepositoryBase<User, Domain.Entities.User, decimal> //, IUserRepository
+    public class UserRepository : RepositoryBase<User, Domain.Entities.User, decimal>
     {
         public UserRepository(ShortStuffContext context) : base(context)
         {
         }
-
-        //public User GetByTag(string tag)
-        //{
-        //    return null;
-        //}
-
-        //public Task<User> GetByTagAsync(string tag)
-        //{
-        //    return null;
-        //}
     }
 }

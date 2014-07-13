@@ -1,14 +1,17 @@
 ﻿// ShortStuff.Domain
-// CreateStatusEnum.cs
+// ActionStatusEnum.cs
 // 
 // Licensed under GNU GPL v2.0
 // See License/GPLv2.txt for details
 
 namespace ShortStuff.Domain.Enums
 {
-    public enum CreateStatusEnum
+    public enum ActionStatusEnum
     {
-        Created,
+        Success,
+        ExceptionError,
+        ValidationError,
+        NotFound,
         Conflict
     }
 }

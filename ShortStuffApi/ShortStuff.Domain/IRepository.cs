@@ -9,7 +9,6 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using ShortStuff.Domain.Entities;
-using ShortStuff.Domain.Enums;
 using ShortStuff.Domain.Helpers;
 
 namespace ShortStuff.Domain
@@ -24,10 +23,10 @@ namespace ShortStuff.Domain
         Task<IEnumerable<TDomain>> GetAllAsync();
         TDomain GetById(TId id);
         Task<TDomain> GetByIdAsync(TId id);
-        CreateStatus<TId> Create(TDomain entity);
-        Task<CreateStatus<TId>> CreateAsync(TDomain entity);
-        UpdateStatus Update(TDomain entity);
-        Task<UpdateStatus> UpdateAsync(TDomain entity);
+        ActionStatus<TId> Create(TDomain entity);
+        Task<ActionStatus<TId>> CreateAsync(TDomain entity);
+        ActionStatus<TId> Update(TDomain entity);
+        Task<ActionStatus<TId>> UpdateAsync(TDomain entity);
         void Delete(TId id);
         Task DeleteAsync(TId id);
     }
