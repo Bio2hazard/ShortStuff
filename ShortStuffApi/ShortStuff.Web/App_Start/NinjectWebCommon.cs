@@ -1,28 +1,43 @@
-// ShortStuff.Web
-// NinjectWebCommon.cs
-// 
-// Licensed under GNU GPL v2.0
-// See License/GPLv2.txt for details
+// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="NinjectWebCommon.cs" company="Bio2hazard">
+//   Licensed under GNU GPL v2.0.
+//   See License/GPLv2.txt for details.
+// </copyright>
+// <summary>
+//   The ninject web common.
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
-using System;
-using System.Web;
-using Microsoft.Web.Infrastructure.DynamicModuleHelper;
-using Ninject;
-using Ninject.Web.Common;
-using ShortStuff.Domain;
-using ShortStuff.Domain.Entities;
-using ShortStuff.Domain.Services;
-using ShortStuff.Repository;
 using ShortStuff.Web;
+
 using WebActivatorEx;
 
-[assembly: WebActivatorEx.PreApplicationStartMethod(typeof (NinjectWebCommon), "Start")]
-[assembly: ApplicationShutdownMethod(typeof (NinjectWebCommon), "Stop")]
+[assembly: PreApplicationStartMethod(typeof(NinjectWebCommon), "Start")]
+[assembly: ApplicationShutdownMethod(typeof(NinjectWebCommon), "Stop")]
 
 namespace ShortStuff.Web
 {
+    using System;
+    using System.Web;
+
+    using Microsoft.Web.Infrastructure.DynamicModuleHelper;
+
+    using Ninject;
+    using Ninject.Web.Common;
+
+    using ShortStuff.Domain;
+    using ShortStuff.Domain.Entities;
+    using ShortStuff.Domain.Services;
+    using ShortStuff.Repository;
+
+    /// <summary>
+    ///     The ninject web common.
+    /// </summary>
     public static class NinjectWebCommon
     {
+        /// <summary>
+        ///     The bootstrapper.
+        /// </summary>
         private static readonly Bootstrapper Bootstrapper = new Bootstrapper();
 
         /// <summary>
@@ -30,8 +45,8 @@ namespace ShortStuff.Web
         /// </summary>
         public static void Start()
         {
-            DynamicModuleUtility.RegisterModule(typeof (OnePerRequestHttpModule));
-            DynamicModuleUtility.RegisterModule(typeof (NinjectHttpModule));
+            DynamicModuleUtility.RegisterModule(typeof(OnePerRequestHttpModule));
+            DynamicModuleUtility.RegisterModule(typeof(NinjectHttpModule));
             Bootstrapper.Initialize(CreateKernel);
         }
 
@@ -52,10 +67,8 @@ namespace ShortStuff.Web
             var kernel = new StandardKernel();
             try
             {
-                kernel.Bind<Func<IKernel>>()
-                      .ToMethod(ctx => () => new Bootstrapper().Kernel);
-                kernel.Bind<IHttpModule>()
-                      .To<HttpApplicationInitializationHttpModule>();
+                kernel.Bind<Func<IKernel>>().ToMethod(ctx => () => new Bootstrapper().Kernel);
+                kernel.Bind<IHttpModule>().To<HttpApplicationInitializationHttpModule>();
 
                 RegisterServices(kernel);
                 return kernel;
@@ -68,54 +81,34 @@ namespace ShortStuff.Web
         }
 
         /// <summary>
-        ///     Load your modules or register your services here!
+        /// Load your modules or register your services here!
         /// </summary>
-        /// <param name="kernel">The kernel.</param>
+        /// <param name="kernel">
+        /// The kernel.
+        /// </param>
         private static void RegisterServices(IKernel kernel)
         {
-            kernel.Bind<IUserService>()
-                  .To<UserService>()
-                  .InRequestScope();
+            kernel.Bind<IUserService>().To<UserService>().InRequestScope();
 
-            kernel.Bind<IMessageService>()
-                  .To<MessageService>()
-                  .InRequestScope();
+            kernel.Bind<IMessageService>().To<MessageService>().InRequestScope();
 
-            kernel.Bind<IEchoService>()
-                  .To<EchoService>()
-                  .InRequestScope();
+            kernel.Bind<IEchoService>().To<EchoService>().InRequestScope();
 
-            kernel.Bind<INotificationService>()
-                  .To<NotificationService>()
-                  .InRequestScope();
+            kernel.Bind<INotificationService>().To<NotificationService>().InRequestScope();
 
-            kernel.Bind<ITopicService>()
-                  .To<TopicService>()
-                  .InRequestScope();
+            kernel.Bind<ITopicService>().To<TopicService>().InRequestScope();
 
-            kernel.Bind<IUnitOfWork>()
-                  .To<UnitOfWork>()
-                  .InRequestScope();
+            kernel.Bind<IUnitOfWork>().To<UnitOfWork>().InRequestScope();
 
-            kernel.Bind<IRepository<User, decimal>>()
-                  .To<UserRepository>()
-                  .InRequestScope();
+            kernel.Bind<IRepository<User, decimal>>().To<UserRepository>().InRequestScope();
 
-            kernel.Bind<IRepository<Message, int>>()
-                  .To<MessageRepository>()
-                  .InRequestScope();
+            kernel.Bind<IRepository<Message, int>>().To<MessageRepository>().InRequestScope();
 
-            kernel.Bind<IRepository<Echo, int>>()
-                  .To<EchoRepository>()
-                  .InRequestScope();
+            kernel.Bind<IRepository<Echo, int>>().To<EchoRepository>().InRequestScope();
 
-            kernel.Bind<IRepository<Notification, int>>()
-                  .To<NotificationRepository>()
-                  .InRequestScope();
+            kernel.Bind<IRepository<Notification, int>>().To<NotificationRepository>().InRequestScope();
 
-            kernel.Bind<IRepository<Topic, int>>()
-                  .To<TopicRepository>()
-                  .InRequestScope();
+            kernel.Bind<IRepository<Topic, int>>().To<TopicRepository>().InRequestScope();
         }
     }
 }

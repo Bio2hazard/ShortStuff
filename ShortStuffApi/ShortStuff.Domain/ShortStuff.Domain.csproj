@@ -54,7 +54,6 @@
     <Compile Include="Enums\NotificationStatus.cs" />
     <Compile Include="Enums\NotificationType.cs" />
     <Compile Include="Helpers\ActionStatus.cs" />
-    <Compile Include="Helpers\CreateStatus.cs" />
     <Compile Include="IRepository.cs" />
     <Compile Include="IUnitOfWork.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
